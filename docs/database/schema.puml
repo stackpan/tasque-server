@@ -1,0 +1,131 @@
+@startuml Tasque database schema
+
+entity users {
+    * id : uuid
+    --
+    * name : varchar(16)
+    email : string
+    * first_name : varchar(32)
+    last_name : varchar(64)
+    profile_picture_url : varchar(1024)
+    * password : varchar(4096)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    deleted_at : timestamptz
+    --
+    unique(name)
+    unique(email)
+}
+
+entity teams {
+    * id : uuid
+    --
+    * name : varchar(32)
+    description: varchar(1024)
+    profile_picture_url : varchar(1024)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    deleted_at : timestamptz
+}
+
+entity user_teams {
+    * id : uuid
+    --
+    * role : enum('owner', 'editor', 'viewer')
+    --
+    * user_id : uuid
+    * team_id : uuid
+    --
+    unique(user_id, team_id)
+}
+
+entity user_team_invitations {
+    * id : uuid
+    --
+    is_accepted : boolean
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    --
+    * from_user_id : uuid
+    * to_user_id : uuid
+    * team_id : uuid
+    --
+}
+
+entity boards {
+    * id : uuid
+    --
+    * name : varchar(64)
+    description : varchar(1024)
+    banner_picture_url : varchar(1024)
+    color_hex : varchar(6)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    deleted_at : timestamptz
+    --
+    * owner_id : uuid
+    * owner_type : enum('user', 'team')
+}
+
+entity columns {
+    * id : uuid
+    --
+    * name : varchar(64)
+    description : varchar(128)
+    color_hex : varchar(6)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    --
+    * board_id : uuid
+    next_column_id : uuid
+}
+
+entity cards {
+    * id : uuid
+    --
+    * name : varchar(255)
+    description : varchar(1024)
+    color_hex : varchar(6)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    --
+    * column_id : uuid
+}
+
+entity comments {
+    * id : uuid
+    --
+    * body : varchar(128)
+    * created_at : timestamptz
+    * updated_at : timestamptz
+    --
+    * user_id : uuid
+    * board_context_id : uuid
+    * board_context_type : enum('board', 'column', 'card')
+}
+
+entity histories {
+    * id : uuid
+    --
+    * action : enum('create', 'update', 'delete')
+    * board_context_target_key : varchar(256),
+    * board_context_target_value : text
+    * created_at : timestamptz
+    --
+    * user_id : uuid
+    * board_context_id : uuid
+    * board_context_type : enum('board', 'column', 'card')
+}
+
+users ||--|{ user_teams
+teams ||--|{ user_teams
+users ||--|{ user_team_invitations
+users ||--|{ user_team_invitations
+teams ||--|{ user_team_invitations
+boards ||--|{ columns
+columns |o--|| columns
+columns ||--|{ cards
+users ||--|{ comments
+users ||--|{ histories
+
+@enduml
