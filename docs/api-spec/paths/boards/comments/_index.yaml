@@ -1,0 +1,90 @@
+get:
+  operationId: listComments
+  summary: Get list of comments in a board
+  tags:
+    - Comment
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - in: query
+      name: contextType
+      schema:
+        type: string
+        format: 'board|column|card'
+        example: 'board'
+    - in: query
+      name: contextId
+      schema:
+        type: string
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/CommentList.yaml'
+    404:
+      description: Not found
+post:
+  operationId: createComment
+  summary: Create a comment
+  tags:
+    - Comment
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            body:
+              type: string
+            contextId:
+              type: string
+            contextType:
+              type: string
+          required:
+            - body
+            - contextId
+            - contextType
+    required: true
+  responses:
+    201:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/boards/board-uuid/comments/comment-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Comment.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          body:
+                            type: array
+                            items:
+                              type: string
+                          contextId:
+                            type: array
+                            items:
+                              type: string
+                          contextType:
+                            type: array
+                            items:
+                              type: string
+    404:
+      description: Not found

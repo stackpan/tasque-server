@@ -1,0 +1,55 @@
+get:
+  operationId: getTeam
+  summary: Get a team
+  tags:
+    - Team
+  parameters:
+    - $ref: '../../components/parameters/TeamIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/TeamWithMemberCount.yaml'
+    404:
+      description: Not found
+put:
+  operationId: updateTeam
+  summary: Update a team
+  tags:
+    - Team
+  parameters:
+    - $ref: '../../components/parameters/TeamIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/payloads/TeamPayload.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Team.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/TeamPayloadError.yaml'
+    404:
+      description: Not found
+delete:
+  operationId: deleteTeam
+  summary: Delete a team
+  tags:
+    - Team
+  parameters:
+    - $ref: '../../components/parameters/TeamIdPath.yaml'
+  responses:
+    204:
+      description: Success no content
+    404:
+      description: Not found

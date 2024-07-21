@@ -1,0 +1,12 @@
+allOf:
+  - $ref: './Team.yaml'
+  - properties:
+      _embedded:
+        type: object
+        properties:
+          memberCount:
+            type: number
+        required:
+          - memberCount
+    required:
+      - _embedded

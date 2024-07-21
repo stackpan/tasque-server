@@ -1,0 +1,17 @@
+post:
+  operationId: verifyEmail
+  summary: Verify user's email
+  tags:
+    - Auth
+  security: []
+  parameters:
+    - in: header
+      name: X-Verify-Email-Token
+      schema:
+        type: string
+      required: true
+  responses:
+    204:
+      description: Success no content
+    403:
+      description: Forbidden

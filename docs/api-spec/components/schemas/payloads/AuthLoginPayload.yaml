@@ -1,0 +1,11 @@
+type: object
+properties:
+  identity:
+    type: string
+    description: It can be a user identity like username or email
+  secret:
+    type: string
+    description: User secret (password)
+required:
+  - identity
+  - secret

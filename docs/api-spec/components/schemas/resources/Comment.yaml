@@ -1,0 +1,79 @@
+type: object
+properties:
+  id:
+    type: string
+  body:
+    type: string
+  contextId:
+    type: string
+  contextType:
+    type: string
+    format: 'board|column|card'
+    example: 'board'
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _embedded:
+    type: object
+    properties:
+      user:
+        $ref: '../../../components/schemas/resources/User.yaml'
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      comments:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/comments'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/comments/comment-uuid'
+        required:
+          - href
+      context:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+    required:
+      - comments
+      - self
+      - context
+required:
+  - id
+  - body
+  - contextId
+  - contextType
+  - createdAt
+  - updatedAt
+  - _links
+  - _embedded

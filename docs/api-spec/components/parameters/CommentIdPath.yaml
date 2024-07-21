@@ -1,0 +1,5 @@
+in: path
+name: commentId
+schema:
+  type: string
+required: true

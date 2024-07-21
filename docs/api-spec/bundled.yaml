@@ -1,0 +1,2958 @@
+openapi: 3.0.3
+info:
+  title: Tasque API
+  description: Tasque API
+  version: 1.0.0
+servers:
+  - url: localhost:8080
+security:
+  - BearerAuth: []
+tags:
+  - name: Auth
+  - name: User
+  - name: Board
+  - name: Column
+  - name: Card
+  - name: Team
+  - name: Team Member
+  - name: Team Invitation
+  - name: Comment
+  - name: History
+paths:
+  /auth/register:
+    post:
+      operationId: register
+      summary: Register a user
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                  nullable: true
+                password:
+                  type: string
+              required:
+                - username
+                - email
+                - firstName
+                - lastName
+                - password
+        required: true
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/users/user-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              username:
+                                type: array
+                                items:
+                                  type: string
+                              email:
+                                type: array
+                                items:
+                                  type: string
+                              firstName:
+                                type: array
+                                items:
+                                  type: string
+                              lastName:
+                                type: array
+                                items:
+                                  type: string
+                              password:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+  /auth/login:
+    post:
+      operationId: login
+      summary: Login to authenticate user
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginPayload'
+      responses:
+        '200':
+          description: Successful login returns a JWT
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Jwt'
+        '400':
+          description: Invalid Request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/AuthLoginPayloadError'
+        '401':
+          description: Unauthorized because of wrong credentials
+  /auth/me:
+    get:
+      operationId: getMe
+      summary: Get current authenticated user
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Validation error
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/AuthLoginPayloadError'
+        '401':
+          description: Unauthorized
+    put:
+      operationId: updateMe
+      summary: Update current authenticated user
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - username
+                - email
+                - firstName
+                - lastName
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              username:
+                                type: array
+                                items:
+                                  type: string
+                              email:
+                                type: array
+                                items:
+                                  type: string
+                              firstName:
+                                type: array
+                                items:
+                                  type: string
+                              lastName:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+    delete:
+      operationId: deleteMe
+      summary: Delete the current authenticated user
+      tags:
+        - Auth
+      responses:
+        '204':
+          description: Success
+  /auth/me/change-password:
+    post:
+      operationId: changePassword
+      summary: Change current authenticated user's password
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+              required:
+                - currentPassword
+                - newPassword
+        required: true
+      responses:
+        '204':
+          description: Success no content
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              currentPassword:
+                                type: array
+                                items:
+                                  type: string
+                              newPassword:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '401':
+          description: Unauthorized because of wrong password
+  /auth/me/upload:
+    patch:
+      operationId: uploadForUpdateMe
+      summary: Upload for update the current authenticated user's media
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profilePicture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Me'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              profilePicture:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+  /auth/verify-email:
+    post:
+      operationId: verifyEmail
+      summary: Verify user's email
+      tags:
+        - Auth
+      security: []
+      parameters:
+        - in: header
+          name: X-Verify-Email-Token
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Success no content
+        '403':
+          description: Forbidden
+  /auth/forgot-password:
+    post:
+      operationId: forgotPassword
+      summary: Request token to email for resetting current user's password
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+        required: true
+      responses:
+        '204':
+          description: Success and an email will be delivered
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              email:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Reset user password based on reset password token
+      tags:
+        - Auth
+      security: []
+      parameters:
+        - in: header
+          name: X-Reset-Password-Token
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+              required:
+                - newPassword
+        required: true
+      responses:
+        '204':
+          description: Success no content
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              newPassword:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '403':
+          description: Forbidden
+  /users/{userId}:
+    get:
+      operationId: getUser
+      summary: Get a user
+      tags:
+        - User
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Not found
+  /boards:
+    get:
+      operationId: listBoards
+      summary: Get list of boards based on authenticated users
+      tags:
+        - Board
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BoardList'
+    post:
+      operationId: createBoard
+      summary: Create a board
+      tags:
+        - Board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/boards/board-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Board'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BoardPayloadError'
+  /boards/{boardId}:
+    get:
+      operationId: getBoard
+      summary: Get a board
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      tags:
+        - Board
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Board'
+        '404':
+          description: Not found
+    put:
+      operationId: updateBoard
+      summary: Update a board
+      tags:
+        - Board
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardPayload'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Board'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BoardPayloadError'
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteBoard
+      summary: Delete a board
+      tags:
+        - Board
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      responses:
+        '204':
+          description: Success no content
+        '404':
+          description: Not found
+  /boards/{boardId}/upload:
+    patch:
+      operationId: uploadForUpdateBoard
+      summary: Upload for update a board media
+      tags:
+        - Board
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bannerPicture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Board'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              bannerPicture:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '404':
+          description: Not found
+  /boards/{boardId}/move-card:
+    post:
+      operationId: moveCard
+      summary: Move a card into another column
+      tags:
+        - Board
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetCardId:
+                  type: string
+                destinationColumnId:
+                  type: string
+              required:
+                - cardId
+                - targetColumnId
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ColumnList'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              targetCardId:
+                                type: array
+                                items:
+                                  type: string
+                              destinationColumnId:
+                                type: array
+                                items:
+                                  type: string
+        '404':
+          description: Not found
+  /boards/{boardId}/comments:
+    get:
+      operationId: listComments
+      summary: Get list of comments in a board
+      tags:
+        - Comment
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - in: query
+          name: contextType
+          schema:
+            type: string
+            format: board|column|card
+            example: board
+        - in: query
+          name: contextId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        '404':
+          description: Not found
+    post:
+      operationId: createComment
+      summary: Create a comment
+      tags:
+        - Comment
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+                contextId:
+                  type: string
+                contextType:
+                  type: string
+              required:
+                - body
+                - contextId
+                - contextType
+        required: true
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/boards/board-uuid/comments/comment-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              body:
+                                type: array
+                                items:
+                                  type: string
+                              contextId:
+                                type: array
+                                items:
+                                  type: string
+                              contextType:
+                                type: array
+                                items:
+                                  type: string
+        '404':
+          description: Not found
+  /boards/{boardId}/comments/{commentId}:
+    get:
+      operationId: getComment
+      summary: Get a comment
+      tags:
+        - Comment
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/CommentIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: Not found
+    put:
+      operationId: updateComment
+      summary: Update a comment
+      tags:
+        - Comment
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/CommentIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+              required:
+                - body
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              body:
+                                type: array
+                                items:
+                                  type: string
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteComment
+      summary: Delete a comment
+      tags:
+        - Comment
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/CommentIdPath'
+      responses:
+        '204':
+          description: Success
+        '404':
+          description: Not found
+  /boards/{boardId}/histories:
+    get:
+      operationId: listHistories
+      summary: Get list of board history
+      tags:
+        - History
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - in: query
+          name: contextType
+          schema:
+            type: string
+            format: board|column|card
+            example: board
+        - in: query
+          name: contextId
+          schema:
+            type: string
+        - in: query
+          name: userId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HistoryList'
+        '404':
+          description: Not found
+  /boards/{boardId}/histories/{historyId}:
+    get:
+      operationId: getHistory
+      summary: Get a board history
+      tags:
+        - History
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/HistoryIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/History'
+        '404':
+          description: Not found
+  /boards/{boardId}/columns:
+    get:
+      operationId: listColumns
+      summary: Get list of columns
+      tags:
+        - Column
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ColumnList'
+        '404':
+          description: Not found
+    post:
+      operationId: createColumn
+      summary: Create a column to a board
+      tags:
+        - Column
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColumnPayload'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/boards/board-uuid/columns/column-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Column'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ColumnPayloadError'
+        '404':
+          description: Not found
+  /boards/{boardId}/columns/{columnId}:
+    get:
+      operationId: getColumn
+      summary: Get a column
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+      tags:
+        - Column
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ColumnDetailed'
+        '404':
+          description: Not found
+    put:
+      operationId: updateColumn
+      summary: Update a column
+      tags:
+        - Column
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColumnPayload'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Column'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ColumnPayloadError'
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteColumn
+      summary: Delete a column
+      tags:
+        - Column
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+      responses:
+        '204':
+          description: Success no content
+        '404':
+          description: Not found
+  /boards/{boardId}/columns/{columnId}/cards:
+    get:
+      operationId: listCards
+      summary: Get list of cards
+      tags:
+        - Card
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/CardList'
+        '404':
+          description: Not found
+    post:
+      operationId: createCard
+      summary: Create a card
+      tags:
+        - Card
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardPayload'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/boards/board-uuid/columns/column-uuid/cards/card-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/CardPayloadError'
+        '404':
+          description: Not found
+  /boards/{boardId}/columns/{columnId}/cards/{cardId}:
+    get:
+      operationId: getCard
+      summary: Get a card
+      tags:
+        - Card
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+        - $ref: '#/components/parameters/CardIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '404':
+          description: Not found
+    put:
+      operationId: updateCard
+      summary: Update a card
+      tags:
+        - Card
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+        - $ref: '#/components/parameters/CardIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardPayload'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/CardPayloadError'
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteCard
+      summary: Delete a card
+      tags:
+        - Card
+      parameters:
+        - $ref: '#/components/parameters/BoardIdPath'
+        - $ref: '#/components/parameters/ColumnIdPath'
+        - $ref: '#/components/parameters/CardIdPath'
+      responses:
+        '204':
+          description: Success no content
+        '404':
+          description: Not found
+  /teams:
+    get:
+      operationId: listTeams
+      summary: Get list of teams based on authenticated users
+      tags:
+        - Team
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamList'
+    post:
+      operationId: createTeam
+      summary: Create team
+      tags:
+        - Team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamPayload'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/teams/team-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamPayloadError'
+  /teams/{teamId}:
+    get:
+      operationId: getTeam
+      summary: Get a team
+      tags:
+        - Team
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamWithMemberCount'
+        '404':
+          description: Not found
+    put:
+      operationId: updateTeam
+      summary: Update a team
+      tags:
+        - Team
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamPayload'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamPayloadError'
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteTeam
+      summary: Delete a team
+      tags:
+        - Team
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      responses:
+        '204':
+          description: Success no content
+        '404':
+          description: Not found
+  /teams/{teamId}/upload:
+    patch:
+      operationId: uploadForUpdateTeam
+      summary: Upload for update a team media
+      tags:
+        - Team
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profilePicture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              profilePicture:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '404':
+          description: Not found
+  /teams/{teamId}/transfer-ownership:
+    post:
+      operationId: transferTeamOwner
+      summary: Transfer team owner to another user
+      tags:
+        - Team
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+              required:
+                - userId
+        required: true
+      responses:
+        '200':
+          description: Response success returns a list of members
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/MemberList'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              userId:
+                                type: array
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '404':
+          description: Not found
+  /teams/{teamId}/members:
+    get:
+      operationId: listMembers
+      summary: Get list of members in a team
+      tags:
+        - Team Member
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/MemberList'
+        '404':
+          description: Not found
+    post:
+      operationId: inviteMember
+      summary: Invite member to join in a team
+      tags:
+        - Team Member
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userSearch:
+                  type: string
+                  description: It can be a username or email
+                role:
+                  type: string
+                  format: editor|viewer
+              required:
+                - userSearch
+                - role
+        required: true
+      responses:
+        '201':
+          description: Created return an invitation
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/team-invitations/team-invitiation-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamInvitation'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              userSearch:
+                                type: array
+                                items:
+                                  type: string
+                              role:
+                                type: string
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '404':
+          description: Not found
+  /teams/{teamId}/members/{memberId}:
+    get:
+      operationId: getMember
+      summary: Get a member
+      tags:
+        - Team Member
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+        - $ref: '#/components/parameters/MemberIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '404':
+          description: Not found
+    put:
+      operationId: updateMember
+      summary: Update a member
+      tags:
+        - Team Member
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+        - $ref: '#/components/parameters/MemberIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  format: editor|viewer
+              required:
+                - role
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Invalid request
+          content:
+            application/hal+json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BasePayloadError'
+                  - properties:
+                      _embedded:
+                        type: object
+                        properties:
+                          payloadErrors:
+                            type: object
+                            properties:
+                              role:
+                                type: string
+                                items:
+                                  type: string
+                        required:
+                          - payloadErrors
+                    required:
+                      - _embedded
+        '404':
+          description: Not found
+    delete:
+      operationId: deleteMember
+      summary: Delete a member from team
+      tags:
+        - Team Member
+      parameters:
+        - $ref: '#/components/parameters/TeamIdPath'
+        - $ref: '#/components/parameters/MemberIdPath'
+      responses:
+        '204':
+          description: Success no content
+        '404':
+          description: Not found
+  /team-invitations:
+    get:
+      operationId: listTeamInvitations
+      summary: Get list of team invitations based on authenticated user
+      tags:
+        - Team Invitation
+      parameters:
+        - in: query
+          name: context
+          schema:
+            type: string
+            format: from-me|for-me
+            example: from-me
+        - in: query
+          name: teamId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamInvitationList'
+  /team-invitations/{teamInvitationId}:
+    get:
+      operationId: getTeamInvitation
+      summary: Get a team invitation
+      tags:
+        - Team Invitation
+      parameters:
+        - $ref: '#/components/parameters/TeamInvitationIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamInvitation'
+        '404':
+          description: Not found
+  /team-invitations/{teamInvitationId}/respond:
+    post:
+      operationId: respondTeamInvitation
+      summary: Respond team invitation
+      tags:
+        - Team Invitation
+      parameters:
+        - $ref: '#/components/parameters/TeamInvitationIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accept:
+                  type: boolean
+              required:
+                - accept
+        required: true
+      responses:
+        '201':
+          description: Returns a member data if user accepted the invitation
+          headers:
+            Location:
+              schema:
+                type: string
+                example: https://example.com/teams/team-uuid/members/member-uuid
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '204':
+          description: Returns no content if user rejected the invitation
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+  /team-invitations/{teamInvitationId}/cancel:
+    post:
+      operationId: cancelTeamInvitation
+      summary: Cancel team invitation
+      tags:
+        - Team Invitation
+      parameters:
+        - $ref: '#/components/parameters/TeamInvitationIdPath'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/TeamInvitation'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+components:
+  securitySchemes:
+    BearerJWT:
+      description: Bearer JWT for authentication
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+        emailVerifiedAt:
+          type: string
+          nullable: true
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/users/user-uuid
+              required:
+                - href
+          required:
+            - self
+      required:
+        - id
+        - username
+        - email
+        - firstName
+        - lastName
+        - profilePictureUrl
+        - emailVerifiedAt
+        - createdAt
+        - updatedAt
+        - _links
+    BasePayloadError:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    AuthLoginPayload:
+      type: object
+      properties:
+        identity:
+          type: string
+          description: It can be a user identity like username or email
+        secret:
+          type: string
+          description: User secret (password)
+      required:
+        - identity
+        - secret
+    Jwt:
+      type: object
+      properties:
+        token:
+          type: string
+        type:
+          type: string
+          example: JWT
+        expiresAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _links:
+          type: object
+          properties:
+            me:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/auth/me
+              required:
+                - href
+          required:
+            - me
+      required:
+        - token
+        - type
+        - expiresAt
+        - _links
+    AuthLoginPayloadError:
+      allOf:
+        - $ref: '#/components/schemas/BasePayloadError'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                payloadErrors:
+                  type: object
+                  properties:
+                    identity:
+                      type: array
+                      items:
+                        type: string
+                    secret:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - payloadErrors
+          required:
+            - _embedded
+    Me:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            _links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      example: https://example.com/auth/me
+                upload:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      example: https://example.com/auth/upload
+                changePassword:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      example: https://example.com/auth/change-password
+                user:
+                  type: object
+                  properties:
+                    href:
+                      type: string
+                      example: https://example.com/users/user-uuid
+              required:
+                - self
+                - upload
+                - changePassword
+                - user
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        profilePictureUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid
+              required:
+                - href
+            upload:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/upload
+              required:
+                - href
+            transferOwnership:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/transfer-ownership
+              required:
+                - href
+            members:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/members
+              required:
+                - href
+          required:
+            - self
+            - upload
+            - transferOwnership
+            - members
+      required:
+        - id
+        - name
+        - description
+        - profilePictureUrl
+        - createdAt
+        - updatedAt
+        - _links
+    Board:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        bannerPictureUrl:
+          type: string
+          nullable: true
+        colorHex:
+          type: string
+          nullable: true
+        ownerType:
+          type: string
+          format: user|team
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _embedded:
+          type: object
+          properties:
+            owner:
+              oneOf:
+                - allOf:
+                    - type: object
+                      properties:
+                        type:
+                          type: string
+                          example: user
+                      required:
+                        - type
+                    - $ref: '#/components/schemas/User'
+                - allOf:
+                    - type: object
+                      properties:
+                        type:
+                          type: string
+                          example: team
+                      required:
+                        - type
+                    - $ref: '#/components/schemas/Team'
+          required:
+            - owner
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            columns:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns
+              required:
+                - href
+            comments:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/comments
+              required:
+                - href
+            histories:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/histories
+              required:
+                - href
+            upload:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/upload
+              required:
+                - href
+            move-card:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/move-card
+              required:
+                - href
+            owner:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/users/user-uuid
+              required:
+                - href
+          required:
+            - boards
+            - self
+            - columns
+            - comments
+            - histories
+            - upload
+            - move-card
+            - owner
+      required:
+        - id
+        - name
+        - description
+        - bannedPictureUrl
+        - colorHex
+        - createdAt
+        - updatedAt
+        - _embedded
+        - _links
+    BoardList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            boards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Board'
+          required:
+            - boards
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+          required:
+            - self
+      required:
+        - _embedded
+        - _links
+    BoardPayload:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        colorHex:
+          type: string
+          nullable: true
+      required:
+        - name
+        - description
+        - colorHex
+    BoardPayloadError:
+      allOf:
+        - $ref: '#/components/schemas/BasePayloadError'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                payloadErrors:
+                  type: object
+                  properties:
+                    name:
+                      type: array
+                      items:
+                        type: string
+                    description:
+                      type: array
+                      items:
+                        type: string
+                    colorHex:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - payloadErrors
+          required:
+            - _embedded
+    Column:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        colorHex:
+          type: string
+          nullable: true
+        nextColumnId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            columns:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid
+              required:
+                - href
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid
+              required:
+                - href
+              nullable: true
+            prev:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid
+              required:
+                - href
+              nullable: true
+          required:
+            - boards
+            - board
+            - columns
+            - self
+            - next
+            - prev
+      required:
+        - id
+        - name
+        - description
+        - colorHex
+        - nextColumnId
+        - createdAt
+        - updatedAt
+        - _links
+    Card:
+      type: object
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+        colorHex:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            columns:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns
+              required:
+                - href
+            column:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid
+              required:
+                - href
+            cards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid/cards
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid/cards/card-uuid
+              required:
+                - href
+          required:
+            - boards
+            - board
+            - columns
+            - column
+            - cards
+            - self
+      required:
+        - id
+        - body
+        - colorHex
+        - createdAt
+        - updatedAt
+        - _links
+    ColumnDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Column'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                cards:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Card'
+              required:
+                - cards
+          required:
+            - _embedded
+    ColumnList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            columns:
+              type: array
+              items:
+                $ref: '#/components/schemas/ColumnDetailed'
+          required:
+            - columns
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns
+              required:
+                - href
+          required:
+            - boards
+            - board
+            - self
+      required:
+        - _embedded
+        - _links
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+        contextId:
+          type: string
+        contextType:
+          type: string
+          format: board|column|card
+          example: board
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _embedded:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            comments:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/comments
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/comments/comment-uuid
+              required:
+                - href
+            context:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+          required:
+            - comments
+            - self
+            - context
+      required:
+        - id
+        - body
+        - contextId
+        - contextType
+        - createdAt
+        - updatedAt
+        - _links
+        - _embedded
+    CommentList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+          required:
+            - comments
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/comments
+              required:
+                - href
+          required:
+            - boards
+            - board
+            - self
+      required:
+        - _embedded
+        - _links
+    History:
+      type: object
+      properties:
+        id:
+          type: string
+        contextId:
+          type: string
+        contextType:
+          type: string
+          format: board|column|card
+          example: board
+        contextKey:
+          type: string
+        contextValueBefore:
+          type: string
+          nullable: true
+        contextValueAfter:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _embedded:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            histories:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/histories
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/histories/history-uuid
+              required:
+                - href
+            context:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+          required:
+            - comments
+            - self
+            - context
+      required:
+        - id
+        - contextId
+        - contextType
+        - contextKey
+        - contextValueBefore
+        - contextValueAfter
+        - createdAt
+        - _links
+        - _embedded
+    HistoryList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            histories:
+              type: array
+              items:
+                $ref: '#/components/schemas/History'
+          required:
+            - histories
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/histories
+              required:
+                - href
+          required:
+            - boards
+            - board
+            - self
+      required:
+        - _embedded
+        - _links
+    ColumnPayload:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        colorHex:
+          type: string
+          nullable: true
+        nextColumnId:
+          type: string
+          nullable: true
+      required:
+        - name
+        - description
+        - colorHex
+        - nextColumnId
+    ColumnPayloadError:
+      allOf:
+        - $ref: '#/components/schemas/BasePayloadError'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                payloadErrors:
+                  type: object
+                  properties:
+                    name:
+                      type: array
+                      items:
+                        type: string
+                    description:
+                      type: array
+                      items:
+                        type: string
+                    colorHex:
+                      type: array
+                      items:
+                        type: string
+                    nextColumnId:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - payloadErrors
+          required:
+            - _embedded
+    CardList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+          required:
+            - cards
+        _links:
+          type: object
+          properties:
+            boards:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards
+              required:
+                - href
+            board:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid
+              required:
+                - href
+            columns:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns
+              required:
+                - href
+            column:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/boards/board-uuid/columns/column-uuid/cards
+              required:
+                - href
+          required:
+            - boards
+            - board
+            - self
+            - column
+            - cards
+      required:
+        - _embedded
+        - _links
+    CardPayload:
+      type: object
+      properties:
+        body:
+          type: string
+        colorHex:
+          type: string
+          nullable: true
+      required:
+        - body
+        - colorHex
+    CardPayloadError:
+      allOf:
+        - $ref: '#/components/schemas/BasePayloadError'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                payloadErrors:
+                  type: object
+                  properties:
+                    body:
+                      type: array
+                      items:
+                        type: string
+                    colorHex:
+                      type: array
+                      items:
+                        type: string
+                    nextColumnId:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - payloadErrors
+          required:
+            - _embedded
+    TeamWithMemberCount:
+      allOf:
+        - $ref: '#/components/schemas/Team'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                memberCount:
+                  type: number
+              required:
+                - memberCount
+          required:
+            - _embedded
+    TeamList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            teams:
+              type: array
+              items:
+                $ref: '#/components/schemas/TeamWithMemberCount'
+          required:
+            - teams
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams
+              required:
+                - href
+          required:
+            - self
+      required:
+        - _embedded
+        - _links
+    TeamPayload:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required:
+        - name
+        - description
+    TeamPayloadError:
+      allOf:
+        - $ref: '#/components/schemas/BasePayloadError'
+        - properties:
+            _embedded:
+              type: object
+              properties:
+                payloadErrors:
+                  type: object
+                  properties:
+                    name:
+                      type: array
+                      items:
+                        type: string
+                    description:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - payloadErrors
+          required:
+            - _embedded
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          format: owner|editor|viewer
+          example: owner
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        _embedded:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+          required:
+            - user
+        _links:
+          type: object
+          properties:
+            teams:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams
+              required:
+                - href
+            team:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid
+              required:
+                - href
+            members:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/members
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/members/member-uuid
+              required:
+                - href
+          required:
+            - teams
+            - team
+            - members
+            - self
+      required:
+        - _links
+        - _embedded
+    MemberList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            members:
+              type: array
+              items:
+                $ref: '#/components/schemas/Member'
+          required:
+            - columns
+        _links:
+          type: object
+          properties:
+            teams:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams
+              required:
+                - href
+            team:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid
+              required:
+                - href
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/teams/team-uuid/members
+              required:
+                - href
+          required:
+            - teams
+            - team
+            - self
+      required:
+        - _embedded
+        - _links
+    TeamInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          format: editor|viewer
+        isAccepted:
+          type: boolean
+          nullable: true
+        createdAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        updatedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+        respondedAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+          nullable: true
+        cancelledAt:
+          type: string
+          format: YYYY-MM-DDTHH:mm:ss.sssZ
+          nullable: true
+        _embedded:
+          type: object
+          properties:
+            fromUser:
+              $ref: '#/components/schemas/User'
+            toUser:
+              $ref: '#/components/schemas/User'
+            team:
+              $ref: '#/components/schemas/Team'
+          required:
+            - fromUser
+            - toUser
+            - team
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                teamInvitations:
+                  type: string
+                  example: https://example.com/team-invitations
+                self:
+                  type: string
+                  example: https://example.com/team-invitations/team-invitation-uuid
+                respond:
+                  type: string
+                  example: https://example.com/team-invitations/team-invitation-uuid/respond
+                cancel:
+                  type: string
+                  example: https://example.com/team-invitations/team-invitation-uuid/cancel
+              required:
+                - teamInvitations
+                - self
+                - respond
+          required:
+            - self
+      required:
+        - id
+        - role
+        - isAccepted
+        - createdAt
+        - updatedAt
+        - respondedAt
+        - _embedded
+        - _links
+    TeamInvitationList:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            teamInvitations:
+              type: array
+              items:
+                $ref: '#/components/schemas/TeamInvitation'
+          required:
+            - teamInvitations
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: https://example.com/team-invitations
+              required:
+                - href
+          required:
+            - self
+      required:
+        - _embedded
+        - _links
+  parameters:
+    UserIdPath:
+      in: path
+      name: userId
+      schema:
+        type: string
+      required: true
+    BoardIdPath:
+      in: path
+      name: boardId
+      schema:
+        type: string
+      required: true
+    CommentIdPath:
+      in: path
+      name: commentId
+      schema:
+        type: string
+      required: true
+    HistoryIdPath:
+      in: path
+      name: historyId
+      schema:
+        type: string
+      required: true
+    ColumnIdPath:
+      in: path
+      name: columnId
+      schema:
+        type: string
+      required: true
+    CardIdPath:
+      in: path
+      name: cardId
+      schema:
+        type: string
+      required: true
+    TeamIdPath:
+      in: path
+      name: teamId
+      schema:
+        type: string
+      required: true
+    MemberIdPath:
+      in: path
+      name: memberId
+      schema:
+        type: string
+      required: true
+    TeamInvitationIdPath:
+      in: path
+      name: teamInvitationId
+      schema:
+        type: string
+      required: true

@@ -1,0 +1,90 @@
+type: object
+properties:
+  id:
+    type: string
+  name:
+    type: string
+  description:
+    type: string
+    nullable: true
+  colorHex:
+    type: string
+    nullable: true
+  nextColumnId:
+    type: string
+    nullable: true
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      columns:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+        required:
+          - href
+      next:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+        required:
+          - href
+        nullable: true
+      prev:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+        required:
+          - href
+        nullable: true
+    required:
+      - boards
+      - board
+      - columns
+      - self
+      - next
+      - prev
+required:
+  - id
+  - name
+  - description
+  - colorHex
+  - nextColumnId
+  - createdAt
+  - updatedAt
+  - _links

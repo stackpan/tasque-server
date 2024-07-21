@@ -1,0 +1,16 @@
+get:
+  operationId: getTeamInvitation
+  summary: Get a team invitation
+  tags:
+    - Team Invitation
+  parameters:
+    - $ref: '../../components/parameters/TeamInvitationIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/TeamInvitation.yaml'
+    404:
+      description: Not found

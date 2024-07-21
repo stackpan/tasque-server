@@ -1,0 +1,76 @@
+get:
+  operationId: getComment
+  summary: Get a comment
+  tags:
+    - Comment
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/CommentIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Comment.yaml'
+    404:
+      description: Not found
+put:
+  operationId: updateComment
+  summary: Update a comment
+  tags:
+    - Comment
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/CommentIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            body:
+              type: string
+          required:
+            - body
+    required: true
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Comment.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          body:
+                            type: array
+                            items:
+                              type: string
+    404:
+      description: Not found
+delete:
+  operationId: deleteComment
+  summary: Delete a comment
+  tags:
+    - Comment
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/CommentIdPath.yaml'
+  responses:
+    204:
+      description: Success
+    404:
+      description: Not found

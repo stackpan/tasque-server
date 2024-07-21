@@ -1,0 +1,65 @@
+type: object
+properties:
+  id:
+    type: string
+  name:
+    type: string
+  description:
+    type: string
+  profilePictureUrl:
+    type: string
+    nullable: true
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _links:
+    type: object
+    properties:
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid'
+        required:
+          - href
+      upload:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/upload'
+        required:
+          - href
+      transferOwnership:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/transfer-ownership'
+        required:
+          - href
+      members:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/members'
+        required:
+          - href
+    required:
+      - self
+      - upload
+      - transferOwnership
+      - members
+required:
+  - id
+  - name
+  - description
+  - profilePictureUrl
+  - createdAt
+  - updatedAt
+  - _links

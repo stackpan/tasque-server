@@ -1,0 +1,41 @@
+get:
+  operationId: listBoards
+  summary: Get list of boards based on authenticated users
+  tags:
+    - Board
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/BoardList.yaml'
+post:
+  operationId: createBoard
+  summary: Create a board
+  tags:
+    - Board
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/payloads/BoardPayload.yaml'
+  responses:
+    201:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Board.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/BoardPayloadError.yaml'

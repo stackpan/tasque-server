@@ -1,0 +1,48 @@
+patch:
+  operationId: uploadForUpdateBoard
+  summary: Upload for update a board media
+  tags:
+    - Board
+  parameters:
+    - $ref: '../../components/parameters/BoardIdPath.yaml'
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            bannerPicture:
+              type: string
+              format: binary
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Board.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          bannerPicture:
+                            type: array
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded
+    404:
+      description: Not found

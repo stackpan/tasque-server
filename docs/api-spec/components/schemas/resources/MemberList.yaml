@@ -1,0 +1,45 @@
+type: object
+properties:
+  _embedded:
+    type: object
+    properties:
+      members:
+        type: array
+        items:
+          $ref: './Member.yaml'
+    required:
+      - columns
+  _links:
+    type: object
+    properties:
+      teams:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams'
+        required:
+          - href
+      team:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/members'
+        required:
+          - href
+    required:
+      - teams
+      - team
+      - self
+required:
+  - _embedded
+  - _links

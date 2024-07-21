@@ -1,0 +1,45 @@
+type: object
+properties:
+  _embedded:
+    type: object
+    properties:
+      histories:
+        type: array
+        items:
+          $ref: './History.yaml'
+    required:
+      - histories
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/histories'
+        required:
+          - href
+    required:
+      - boards
+      - board
+      - self
+required:
+  - _embedded
+  - _links

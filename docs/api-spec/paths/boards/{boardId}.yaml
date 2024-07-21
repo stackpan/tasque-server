@@ -1,0 +1,56 @@
+get:
+  operationId: getBoard
+  summary: Get a board
+  parameters:
+    - $ref: '../../components/parameters/BoardIdPath.yaml'
+  tags:
+    - Board
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Board.yaml'
+    404:
+      description: Not found
+put:
+  operationId: updateBoard
+  summary: Update a board
+  tags:
+    - Board
+  parameters:
+    - $ref: '../../components/parameters/BoardIdPath.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/payloads/BoardPayload.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Board.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/BoardPayloadError.yaml'
+    404:
+      description: Not found
+delete:
+  operationId: deleteBoard
+  summary: Delete a board
+  tags:
+    - Board
+  parameters:
+    - $ref: '../../components/parameters/BoardIdPath.yaml'
+  responses:
+    204:
+      description: Success no content
+    404:
+      description: Not found
