@@ -1,0 +1,36 @@
+post:
+  operationId: respondTeamInvitation
+  summary: Respond team invitation
+  tags:
+    - Team Invitation
+  parameters:
+    - $ref: '../../components/parameters/TeamInvitationIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            accept:
+              type: boolean
+          required:
+            - accept
+    required: true
+  responses:
+    201:
+      description: Returns a member data if user accepted the invitation
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/teams/team-uuid/members/member-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Member.yaml'
+    204:
+      description: Returns no content if user rejected the invitation
+    403:
+      description: Forbidden
+    404:
+      description: Not found

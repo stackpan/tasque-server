@@ -1,0 +1,49 @@
+post:
+  operationId: transferTeamOwner
+  summary: Transfer team owner to another user
+  tags:
+    - Team
+  parameters:
+    - $ref: '../../components/parameters/TeamIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            userId:
+              type: string
+          required:
+            - userId
+    required: true
+  responses:
+    200:
+      description: Response success returns a list of members
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/MemberList.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          userId:
+                            type: array
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded
+    404:
+      description: Not found

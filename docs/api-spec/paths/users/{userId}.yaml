@@ -1,0 +1,16 @@
+get:
+  operationId: getUser
+  summary: Get a user
+  tags:
+    - User
+  parameters:
+    - $ref: '../../components/parameters/UserIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/User.yaml'
+    404:
+      description: Not found

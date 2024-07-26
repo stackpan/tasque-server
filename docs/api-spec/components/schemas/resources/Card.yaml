@@ -1,0 +1,80 @@
+type: object
+properties:
+  id:
+    type: string
+  body:
+    type: string
+  colorHex:
+    type: string
+    nullable: true
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      columns:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns'
+        required:
+          - href
+      column:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+        required:
+          - href
+      cards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid/cards'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid/cards/card-uuid'
+        required:
+          - href
+    required:
+      - boards
+      - board
+      - columns
+      - column
+      - cards
+      - self
+required:
+  - id
+  - body
+  - colorHex
+  - createdAt
+  - updatedAt
+  - _links

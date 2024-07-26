@@ -1,0 +1,10 @@
+type: object
+properties:
+  body:
+    type: string
+  colorHex:
+    type: string
+    nullable: true
+required:
+  - body
+  - colorHex

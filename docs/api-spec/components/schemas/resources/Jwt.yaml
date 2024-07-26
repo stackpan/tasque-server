@@ -1,0 +1,28 @@
+type: object
+properties:
+  token:
+    type: string
+  type:
+    type: string
+    example: 'JWT'
+  expiresAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _links:
+    type: object
+    properties:
+      me:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/auth/me'
+        required:
+          - href
+    required:
+      - me
+required:
+  - token
+  - type
+  - expiresAt
+  - _links

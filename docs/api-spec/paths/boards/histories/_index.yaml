@@ -1,0 +1,30 @@
+get:
+  operationId: listHistories
+  summary: Get list of board history
+  tags:
+    - History
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - in: query
+      name: contextType
+      schema:
+        type: string
+        format: 'board|column|card'
+        example: 'board'
+    - in: query
+      name: contextId
+      schema:
+        type: string
+    - in: query
+      name: userId
+      schema:
+        type: string
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/HistoryList.yaml'
+    404:
+      description: Not found

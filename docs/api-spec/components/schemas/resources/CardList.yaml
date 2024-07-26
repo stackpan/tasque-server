@@ -1,0 +1,63 @@
+type: object
+properties:
+  _embedded:
+    type: object
+    properties:
+      cards:
+        type: array
+        items:
+          $ref: './Card.yaml'
+    required:
+      - cards
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      columns:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns'
+        required:
+          - href
+      column:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid/cards'
+        required:
+          - href
+    required:
+      - boards
+      - board
+      - self
+      - column
+      - cards
+required:
+  - _embedded
+  - _links

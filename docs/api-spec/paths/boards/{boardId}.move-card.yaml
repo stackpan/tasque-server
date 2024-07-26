@@ -1,0 +1,51 @@
+post:
+  operationId: moveCard
+  summary: Move a card into another column
+  tags:
+    - Board
+  parameters:
+    - $ref: '../../components/parameters/BoardIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            targetCardId:
+              type: string
+            destinationColumnId:
+              type: string
+          required:
+            - cardId
+            - targetColumnId
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/ColumnList.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          targetCardId:
+                            type: array
+                            items:
+                              type: string
+                          destinationColumnId:
+                            type: array
+                            items:
+                              type: string
+    404:
+      description: Not found

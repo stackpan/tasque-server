@@ -1,0 +1,5 @@
+in: path
+name: teamId
+schema:
+  type: string
+required: true

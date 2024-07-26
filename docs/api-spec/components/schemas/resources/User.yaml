@@ -1,0 +1,50 @@
+type: object
+properties:
+  id:
+    type: string
+  username:
+    type: string
+  email:
+    type: string
+  firstName:
+    type: string
+  lastName:
+    type: string
+    nullable: true
+  profilePictureUrl:
+    type: string
+    nullable: true
+  emailVerifiedAt:
+    type: string
+    nullable: true
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _links:
+    type: object
+    properties:
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/users/user-uuid'
+        required:
+          - href
+    required:
+      - self
+required:
+  - id
+  - username
+  - email
+  - firstName
+  - lastName
+  - profilePictureUrl
+  - emailVerifiedAt
+  - createdAt
+  - updatedAt
+  - _links

@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Tasque API
+  description: Tasque API
+  version: 1.0.0
+servers:
+  - url: localhost:8080
+tags:
+  - name: Auth
+  - name: User
+  - name: Board
+  - name: Column
+  - name: Card
+  - name: Team
+  - name: Team Member
+  - name: Team Invitation
+  - name: Comment
+  - name: History
+paths:
+  /auth/register:
+    $ref: './paths/auth/register.yaml'
+  /auth/login:
+    $ref: './paths/auth/login.yaml'
+  /auth/me:
+    $ref: './paths/auth/me.yaml'
+  /auth/me/change-password:
+    $ref: './paths/auth/me.change-password.yaml'
+  /auth/me/upload:
+    $ref: './paths/auth/me.upload.yaml'
+  /auth/verify-email:
+    $ref: './paths/auth/verify-email.yaml'
+  /auth/forgot-password:
+    $ref: './paths/auth/forgot-password.yaml'
+  /auth/reset-password:
+    $ref: './paths/auth/reset-password.yaml'
+  /users/{userId}:
+    $ref: './paths/users/{userId}.yaml'
+  /boards:
+    $ref: './paths/boards/_index.yaml'
+  /boards/{boardId}:
+    $ref: './paths/boards/{boardId}.yaml'
+  /boards/{boardId}/upload:
+    $ref: './paths/boards/{boardId}.upload.yaml'
+  /boards/{boardId}/move-card:
+    $ref: './paths/boards/{boardId}.move-card.yaml'
+  /boards/{boardId}/comments:
+    $ref: './paths/boards/comments/_index.yaml'
+  /boards/{boardId}/comments/{commentId}:
+    $ref: './paths/boards/comments/{commentId}.yaml'
+  /boards/{boardId}/histories:
+    $ref: './paths/boards/histories/_index.yaml'
+  /boards/{boardId}/histories/{historyId}:
+    $ref: './paths/boards/histories/{historyId}.yaml'
+  /boards/{boardId}/columns:
+    $ref: './paths/boards/columns/_index.yaml'
+  /boards/{boardId}/columns/{columnId}:
+    $ref: './paths/boards/columns/{columnId}.yaml'
+  /boards/{boardId}/columns/{columnId}/cards:
+    $ref: './paths/boards/columns/cards/_index.yaml'
+  /boards/{boardId}/columns/{columnId}/cards/{cardId}:
+    $ref: './paths/boards/columns/cards/{cardId}.yaml'
+  /teams:
+    $ref: './paths/teams/_index.yaml'
+  /teams/{teamId}:
+    $ref: './paths/teams/{teamId}.yaml'
+  /teams/{teamId}/upload:
+    $ref: './paths/teams/{teamId}.upload.yaml'
+  /teams/{teamId}/transfer-ownership:
+    $ref: './paths/teams/{teamId}.transfer-ownership.yaml'
+  /teams/{teamId}/members:
+    $ref: './paths/teams/members/_index.yaml'
+  /teams/{teamId}/members/{memberId}:
+    $ref: './paths/teams/members/{memberId}.yaml'
+  /team-invitations:
+    $ref: './paths/team-invitations/_index.yaml'
+  /team-invitations/{teamInvitationId}:
+    $ref: './paths/team-invitations/{teamInvitationId}.yaml'
+  /team-invitations/{teamInvitationId}/respond:
+    $ref: './paths/team-invitations/{teamInvitationId}.respond.yaml'
+  /team-invitations/{teamInvitationId}/cancel:
+    $ref: './paths/team-invitations/{teamInvitationId}.cancel.yaml'
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerJWT:
+      description: Bearer JWT for authentication
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

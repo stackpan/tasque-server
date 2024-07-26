@@ -1,0 +1,23 @@
+get:
+  operationId: listTeamInvitations
+  summary: Get list of team invitations based on authenticated user
+  tags:
+    - Team Invitation
+  parameters:
+    - in: query
+      name: context
+      schema:
+        type: string
+        format: 'from-me|for-me'
+        example: 'from-me'
+    - in: query
+      name: teamId
+      schema:
+        type: string
+  responses:
+    200:
+     description: Success
+     content:
+       application/json:
+         schema:
+          $ref: '../../components/schemas/resources/TeamInvitationList.yaml'

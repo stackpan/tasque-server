@@ -1,0 +1,64 @@
+type: object
+properties:
+  id:
+    type: string
+  role:
+    type: string
+    format: 'owner|editor|viewer'
+    example: 'owner'
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _embedded:
+    type: object
+    properties:
+      user:
+        $ref: '../../../components/schemas/resources/User.yaml'
+    required:
+      - user
+  _links:
+    type: object
+    properties:
+      teams:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams'
+        required:
+          - href
+      team:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid'
+        required:
+          - href
+      members:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/members'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/teams/team-uuid/members/member-uuid'
+        required:
+          - href
+    required:
+      - teams
+      - team
+      - members
+      - self
+required:
+  - _links
+  - _embedded

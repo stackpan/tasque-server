@@ -1,0 +1,70 @@
+type: object
+properties:
+  id:
+    type: string
+  role:
+    type: string
+    format: 'editor|viewer'
+  isAccepted:
+    type: boolean
+    nullable: true
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  respondedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+    nullable: true
+  cancelledAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+    nullable: true
+  _embedded:
+    type: object
+    properties:
+      fromUser:
+        $ref: '../../../components/schemas/resources/User.yaml'
+      toUser:
+        $ref: '../../../components/schemas/resources/User.yaml'
+      team:
+        $ref: '../../../components/schemas/resources/Team.yaml'
+    required:
+      - fromUser
+      - toUser
+      - team
+  _links:
+    type: object
+    properties:
+      self:
+        type: object
+        properties:
+          teamInvitations:
+            type: string
+            example: 'https://example.com/team-invitations'
+          self:
+            type: string
+            example: 'https://example.com/team-invitations/team-invitation-uuid'
+          respond:
+            type: string
+            example: 'https://example.com/team-invitations/team-invitation-uuid/respond'
+          cancel:
+            type: string
+            example: 'https://example.com/team-invitations/team-invitation-uuid/cancel'
+        required:
+          - teamInvitations
+          - self
+          - respond
+    required:
+      - self
+required:
+  - id
+  - role
+  - isAccepted
+  - createdAt
+  - updatedAt
+  - respondedAt
+  - _embedded
+  - _links

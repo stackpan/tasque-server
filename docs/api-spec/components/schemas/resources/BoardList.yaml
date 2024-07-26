@@ -1,0 +1,27 @@
+type: object
+properties:
+  _embedded:
+    type: object
+    properties:
+      boards:
+        type: array
+        items:
+          $ref: './Board.yaml'
+    required:
+      - boards
+  _links:
+    type: object
+    properties:
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+    required:
+      - self
+required:
+  - _embedded
+  - _links

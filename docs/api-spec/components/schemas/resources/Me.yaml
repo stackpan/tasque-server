@@ -1,0 +1,36 @@
+allOf:
+  - $ref: './User.yaml'
+  - type: object
+    properties:
+      _links:
+        type: object
+        properties:
+          self:
+            type: object
+            properties:
+              href:
+                type: string
+                example: 'https://example.com/auth/me'
+          upload:
+            type: object
+            properties:
+              href:
+                type: string
+                example: 'https://example.com/auth/upload'
+          changePassword:
+            type: object
+            properties:
+              href:
+                type: string
+                example: 'https://example.com/auth/change-password'
+          user:
+            type: object
+            properties:
+              href:
+                type: string
+                example: 'https://example.com/users/user-uuid'
+        required:
+          - self
+          - upload
+          - changePassword
+          - user

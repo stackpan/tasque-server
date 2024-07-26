@@ -1,0 +1,94 @@
+get:
+  operationId: getMe
+  summary: Get current authenticated user
+  tags:
+    - Auth
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Me.yaml'
+    400:
+      description: Validation error
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/AuthLoginPayloadError.yaml'
+    401:
+      description: Unauthorized
+put:
+  operationId: updateMe
+  summary: Update current authenticated user
+  tags:
+    - Auth
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            email:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+          required:
+            - username
+            - email
+            - firstName
+            - lastName
+    required: true
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Me.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          username:
+                            type: array
+                            items:
+                              type: string
+                          email:
+                            type: array
+                            items:
+                              type: string
+                          firstName:
+                            type: array
+                            items:
+                              type: string
+                          lastName:
+                            type: array
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded
+delete:
+  operationId: deleteMe
+  summary: Delete the current authenticated user
+  tags:
+    - Auth
+  responses:
+    204:
+      description: Success
