@@ -1,9 +1,15 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:16-alpine'
+    restart: on-failure
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_USER: '${POSTGRES_USER:-mydatabase}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-mysecret}'
+      POSTGRES_DB: '${POSTGRES_DB:-myuser}'
     ports:
-      - '5432'
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - 'tasque-server-postgres:/var/lib/postgresql/data'
+volumes:
+  tasque-server-postgres:
+    driver: local
