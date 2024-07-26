@@ -1,0 +1,58 @@
+get:
+  operationId: getColumn
+  summary: Get a column
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/ColumnIdPath.yaml'
+  tags:
+    - Column
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/ColumnDetailed.yaml'
+    404:
+      description: Not found
+put:
+  operationId: updateColumn
+  summary: Update a column
+  tags:
+    - Column
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/ColumnIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../../components/schemas/payloads/ColumnPayload.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Column.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/errors/ColumnPayloadError.yaml'
+    404:
+      description: Not found
+delete:
+  operationId: deleteColumn
+  summary: Delete a column
+  tags:
+    - Column
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/ColumnIdPath.yaml'
+  responses:
+    204:
+      description: Success no content
+    404:
+      description: Not found

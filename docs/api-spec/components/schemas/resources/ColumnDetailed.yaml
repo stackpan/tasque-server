@@ -1,0 +1,14 @@
+allOf:
+  - $ref: './Column.yaml'
+  - properties:
+      _embedded:
+        type: object
+        properties:
+          cards:
+            type: array
+            items:
+              $ref: '../../../components/schemas/resources/Card.yaml'
+        required:
+          - cards
+    required:
+      - _embedded

@@ -1,0 +1,27 @@
+post:
+  operationId: login
+  summary: Login to authenticate user
+  tags:
+    - Auth
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/payloads/AuthLoginPayload.yaml'
+  responses:
+    200:
+      description: Successful login returns a JWT
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Jwt.yaml'
+    400:
+      description: Invalid Request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/AuthLoginPayloadError.yaml'
+    401:
+      description: Unauthorized because of wrong credentials

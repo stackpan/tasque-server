@@ -1,0 +1,40 @@
+get:
+  operationId: listTeams
+  summary: Get list of teams based on authenticated users
+  tags:
+    - Team
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/TeamList.yaml'
+post:
+  operationId: createTeam
+  summary: Create team
+  tags:
+    - Team
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/payloads/TeamPayload.yaml'
+  responses:
+    201:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/teams/team-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Team.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/errors/TeamPayloadError.yaml'

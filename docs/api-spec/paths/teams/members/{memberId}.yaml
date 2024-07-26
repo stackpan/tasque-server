@@ -1,0 +1,81 @@
+get:
+  operationId: getMember
+  summary: Get a member
+  tags:
+    - Team Member
+  parameters:
+    - $ref: '../../../components/parameters/TeamIdPath.yaml'
+    - $ref: '../../../components/parameters/MemberIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Member.yaml'
+    404:
+      description: Not found
+put:
+  operationId: updateMember
+  summary: Update a member
+  tags:
+    - Team Member
+  parameters:
+    - $ref: '../../../components/parameters/TeamIdPath.yaml'
+    - $ref: '../../../components/parameters/MemberIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            role:
+              type: string
+              format: 'editor|viewer'
+          required:
+            - role
+    required: true
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Member.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          role:
+                            type: string
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded
+    404:
+      description: Not found
+delete:
+  operationId: deleteMember
+  summary: Delete a member from team
+  tags:
+    - Team Member
+  parameters:
+    - $ref: '../../../components/parameters/TeamIdPath.yaml'
+    - $ref: '../../../components/parameters/MemberIdPath.yaml'
+  responses:
+    204:
+      description: Success no content
+    404:
+      description: Not found

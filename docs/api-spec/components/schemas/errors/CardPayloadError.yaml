@@ -1,0 +1,25 @@
+allOf:
+  - $ref: './BasePayloadError.yaml'
+  - properties:
+      _embedded:
+        type: object
+        properties:
+          payloadErrors:
+            type: object
+            properties:
+              body:
+                type: array
+                items:
+                  type: string
+              colorHex:
+                type: array
+                items:
+                  type: string
+              nextColumnId:
+                type: array
+                items:
+                  type: string
+        required:
+          - payloadErrors
+    required:
+      - _embedded

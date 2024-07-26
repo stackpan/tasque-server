@@ -1,0 +1,80 @@
+post:
+  operationId: register
+  summary: Register a user
+  tags:
+    - Auth
+  security: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            email:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+              nullable: true
+            password:
+              type: string
+          required:
+            - username
+            - email
+            - firstName
+            - lastName
+            - password
+    required: true
+  responses:
+    201:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/users/user-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/User.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          username:
+                            type: array
+                            items:
+                              type: string
+                          email:
+                            type: array
+                            items:
+                              type: string
+                          firstName:
+                            type: array
+                            items:
+                              type: string
+                          lastName:
+                            type: array
+                            items:
+                              type: string
+                          password:
+                            type: array
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded

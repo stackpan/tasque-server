@@ -1,0 +1,45 @@
+type: object
+properties:
+  _embedded:
+    type: object
+    properties:
+      columns:
+        type: array
+        items:
+          $ref: './ColumnDetailed.yaml'
+    required:
+      - columns
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      board:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns'
+        required:
+          - href
+    required:
+      - boards
+      - board
+      - self
+required:
+  - _embedded
+  - _links

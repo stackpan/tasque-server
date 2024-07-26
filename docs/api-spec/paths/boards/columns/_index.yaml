@@ -1,0 +1,48 @@
+get:
+  operationId: listColumns
+  summary: Get list of columns
+  tags:
+    - Column
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/ColumnList.yaml'
+    404:
+      description: Not found
+post:
+  operationId: createColumn
+  summary: Create a column to a board
+  tags:
+    - Column
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '../../../components/schemas/payloads/ColumnPayload.yaml'
+  responses:
+    201:
+      description: Created
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/Column.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/errors/ColumnPayloadError.yaml'
+    404:
+      description: Not found

@@ -1,0 +1,79 @@
+get:
+  operationId: listMembers
+  summary: Get list of members in a team
+  tags:
+    - Team Member
+  parameters:
+    - $ref: '../../../components/parameters/TeamIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/MemberList.yaml'
+    404:
+      description: Not found
+post:
+  operationId: inviteMember
+  summary: Invite member to join in a team
+  tags:
+    - Team Member
+  parameters:
+    - $ref: '../../../components/parameters/TeamIdPath.yaml'
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            userSearch:
+              type: string
+              description: 'It can be a username or email'
+            role:
+              type: string
+              format: 'editor|viewer'
+          required:
+            - userSearch
+            - role
+    required: true
+  responses:
+    201:
+      description: Created return an invitation
+      headers:
+        Location:
+          schema:
+            type: string
+            example: 'https://example.com/team-invitations/team-invitiation-uuid'
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/TeamInvitation.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          userSearch:
+                            type: array
+                            items:
+                              type: string
+                          role:
+                            type: string
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded
+    404:
+      description: Not found

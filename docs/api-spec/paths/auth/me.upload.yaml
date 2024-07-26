@@ -1,0 +1,44 @@
+patch:
+  operationId: uploadForUpdateMe
+  summary: Upload for update the current authenticated user's media
+  tags:
+    - Auth
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            profilePicture:
+              type: string
+              format: binary
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../components/schemas/resources/Me.yaml'
+    400:
+      description: Invalid request
+      content:
+        application/hal+json:
+          schema:
+            allOf:
+              - $ref: '../../components/schemas/errors/BasePayloadError.yaml'
+              - properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      payloadErrors:
+                        type: object
+                        properties:
+                          profilePicture:
+                            type: array
+                            items:
+                              type: string
+                    required:
+                      - payloadErrors
+                required:
+                  - _embedded

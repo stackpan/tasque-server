@@ -1,0 +1,5 @@
+in: path
+name: teamInvitationId
+schema:
+  type: string
+required: true

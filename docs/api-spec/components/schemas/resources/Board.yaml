@@ -1,0 +1,135 @@
+type: object
+properties:
+  id:
+    type: string
+  name:
+    type: string
+  description:
+    type: string
+    nullable: true
+  bannerPictureUrl:
+    type: string
+    nullable: true
+  colorHex:
+    type: string
+    nullable: true
+  ownerType:
+    type: string
+    format: 'user|team'
+  createdAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  updatedAt:
+    type: string
+    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  _embedded:
+    type: object
+    properties:
+      owner:
+        oneOf:
+          - allOf:
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    example: 'user'
+                required:
+                  - type
+              - $ref: './User.yaml'
+          - allOf:
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    example: 'team'
+                required:
+                  - type
+              - $ref: './Team.yaml'
+    required:
+      - owner
+  _links:
+    type: object
+    properties:
+      boards:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards'
+        required:
+          - href
+      self:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid'
+        required:
+          - href
+      columns:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/columns'
+        required:
+          - href
+      comments:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/comments'
+        required:
+          - href
+      histories:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/histories'
+        required:
+          - href
+      upload:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/upload'
+        required:
+          - href
+      move-card:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/boards/board-uuid/move-card'
+        required:
+          - href
+      owner:
+        type: object
+        properties:
+          href:
+            type: string
+            example: 'https://example.com/users/user-uuid'
+        required:
+          - href
+    required:
+      - boards
+      - self
+      - columns
+      - comments
+      - histories
+      - upload
+      - move-card
+      - owner
+required:
+  - id
+  - name
+  - description
+  - bannedPictureUrl
+  - colorHex
+  - createdAt
+  - updatedAt
+  - _embedded
+  - _links

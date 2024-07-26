@@ -1,0 +1,17 @@
+get:
+  operationId: getHistory
+  summary: Get a board history
+  tags:
+    - History
+  parameters:
+    - $ref: '../../../components/parameters/BoardIdPath.yaml'
+    - $ref: '../../../components/parameters/HistoryIdPath.yaml'
+  responses:
+    200:
+      description: Success
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../../../components/schemas/resources/History.yaml'
+    404:
+      description: Not found
