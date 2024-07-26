@@ -1,1 +1,1 @@
-rootProject.name = "tasque"
+rootProject.name = "tasque-server"
