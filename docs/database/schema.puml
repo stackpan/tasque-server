@@ -3,12 +3,12 @@
 entity users {
     * id : uuid
     * username : varchar(16)
-    email : string
+    * email : varchar(64)
     * first_name : varchar(32)
     last_name : varchar(64)
     profile_picture_url : varchar(1024)
     * password : varchar(4096)
-    emailVerifiedAt : timestamptz
+    email_verified_at : timestamptz
     * created_at : timestamptz
     * updated_at : timestamptz
     deleted_at : timestamptz
