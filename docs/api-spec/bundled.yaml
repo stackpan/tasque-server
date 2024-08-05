@@ -141,12 +141,6 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Me'
-        '400':
-          description: Validation error
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/AuthLoginPayloadError'
         '401':
           description: Unauthorized
     put:

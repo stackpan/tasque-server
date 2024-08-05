@@ -10,12 +10,6 @@ get:
         application/hal+json:
           schema:
             $ref: '../../components/schemas/resources/Me.yaml'
-    400:
-      description: Validation error
-      content:
-        application/hal+json:
-          schema:
-            $ref: '../../components/schemas/errors/AuthLoginPayloadError.yaml'
     401:
       description: Unauthorized
 put:

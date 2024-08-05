@@ -3,9 +3,9 @@ services:
     image: 'postgres:16-alpine'
     restart: on-failure
     environment:
-      POSTGRES_USER: '${POSTGRES_USER:-mydatabase}'
-      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-mysecret}'
-      POSTGRES_DB: '${POSTGRES_DB:-myuser}'
+      POSTGRES_DB: '${POSTGRES_DB:-tasque}'
+      POSTGRES_USER: '${POSTGRES_USER:-tasque}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-tasquesecret}'
     ports:
       - '${POSTGRES_PORT:-5432}:5432'
     volumes:
