@@ -13,23 +13,26 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @Import(TestContainersConfig.class)
+@Sql(scripts = "classpath:datasources/user.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @AutoConfigureMockMvc
+@Transactional
 public class AuthTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Nested
-    @Sql(scripts = {"classpath:datasources/user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-    public class Login {
+    class Login {
 
         @Test
         void withUsernameIdentityShouldReturnJwt() throws Exception {
@@ -115,6 +118,44 @@ public class AuthTest {
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
                     )
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    class Me {
+
+        @Test
+        void shouldReturnUser() throws Exception {
+            mockMvc.perform(get("/auth/me")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$.username").value("firstone"),
+                            jsonPath("$.email").value("firstone@example.com"),
+                            jsonPath("$.firstName").value("First"),
+                            jsonPath("$.lastName").value("One"),
+                            jsonPath("$.profilePictureUrl").isEmpty(),
+                            jsonPath("$.emailVerifiedAt").isEmpty(),
+                            jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$.updatedAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._links.self.href").value(containsString("/auth/me")),
+                            jsonPath("$._links.upload.href").value(containsString("/auth/me/upload")),
+                            jsonPath("$._links.changePassword.href").value(containsString("/auth/me/change-password")),
+                            jsonPath("$._links.user.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6"))
+                    );
+        }
+
+        @Test
+        void unauthenticatedShouldUnauthorized() throws Exception {
+            mockMvc.perform(get("/auth/me"))
                     .andExpect(status().isUnauthorized());
         }
     }

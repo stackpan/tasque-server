@@ -5,11 +5,16 @@ import io.github.stackpan.tasque.http.request.LoginRequest;
 import io.github.stackpan.tasque.http.resource.AuthResource;
 import io.github.stackpan.tasque.http.resource.UserResource;
 import io.github.stackpan.tasque.service.AuthService;
+import io.github.stackpan.tasque.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -21,6 +26,8 @@ public class AuthController {
 
     private final AuthService authService;
 
+    private final UserService userService;
+
     @PostMapping("/login")
     public EntityModel<AuthResource> login(@RequestBody @Valid LoginRequest request) {
         var jwt = authService.login(AuthLoginDto.fromRequest(request));
@@ -31,6 +38,25 @@ public class AuthController {
 
     @GetMapping("/me")
     public EntityModel<UserResource> me(JwtAuthenticationToken token) {
-        return null;
+        var subject = (String) token.getTokenAttributes().get("sub");
+        var user = userService.getById(UUID.fromString(subject));
+
+        var resource = UserResource.fromEntity(user);
+        return EntityModel.of(resource,
+                linkTo(methodOn(AuthController.class).me(token)).withSelfRel(),
+                linkTo(methodOn(AuthController.class).upload()).withRel("upload"),
+                linkTo(methodOn(AuthController.class).changePassword()).withRel("changePassword"),
+                linkTo(methodOn(UserController.class).getUser(user.getId().toString())).withRel("user")
+        );
+    }
+
+    @PatchMapping("/me/upload")
+    public Object upload() {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/me/change-password")
+    public Object changePassword() {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 }
