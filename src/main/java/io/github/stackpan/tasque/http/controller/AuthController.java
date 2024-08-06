@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.AuthLoginDto;
+import io.github.stackpan.tasque.http.assembler.AuthModelAssembler;
 import io.github.stackpan.tasque.http.request.LoginRequest;
 import io.github.stackpan.tasque.http.resource.AuthResource;
 import io.github.stackpan.tasque.http.resource.UserResource;
@@ -41,13 +42,7 @@ public class AuthController {
         var subject = (String) token.getTokenAttributes().get("sub");
         var user = userService.getById(UUID.fromString(subject));
 
-        var resource = UserResource.fromEntity(user);
-        return EntityModel.of(resource,
-                linkTo(methodOn(AuthController.class).me(token)).withSelfRel(),
-                linkTo(methodOn(AuthController.class).upload()).withRel("upload"),
-                linkTo(methodOn(AuthController.class).changePassword()).withRel("changePassword"),
-                linkTo(methodOn(UserController.class).getUser(user.getId().toString())).withRel("user")
-        );
+        return new AuthModelAssembler().toModel(user);
     }
 
     @PatchMapping("/me/upload")
