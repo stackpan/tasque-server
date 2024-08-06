@@ -4,8 +4,8 @@ properties:
     type: string
   role:
     type: string
-    format: 'owner|editor|viewer'
-    example: 'owner'
+    format: 'OWNER|EDITOR|VIEWER'
+    example: 'OWNER'
   createdAt:
     type: string
     format: 'YYYY-MM-DDTHH:mm:ss.sssZ'

@@ -13,9 +13,11 @@ properties:
   colorHex:
     type: string
     nullable: true
+  ownerId:
+    type: string
   ownerType:
     type: string
-    format: 'user|team'
+    format: 'USER|TEAM'
   createdAt:
     type: string
     format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
@@ -27,24 +29,8 @@ properties:
     properties:
       owner:
         oneOf:
-          - allOf:
-              - type: object
-                properties:
-                  type:
-                    type: string
-                    example: 'user'
-                required:
-                  - type
-              - $ref: './User.yaml'
-          - allOf:
-              - type: object
-                properties:
-                  type:
-                    type: string
-                    example: 'team'
-                required:
-                  - type
-              - $ref: './Team.yaml'
+          - $ref: './User.yaml'
+          - $ref: './Team.yaml'
     required:
       - owner
   _links:
@@ -98,7 +84,7 @@ properties:
             example: 'https://example.com/boards/board-uuid/upload'
         required:
           - href
-      move-card:
+      moveCard:
         type: object
         properties:
           href:
@@ -121,7 +107,7 @@ properties:
       - comments
       - histories
       - upload
-      - move-card
+      - moveCard
       - owner
 required:
   - id

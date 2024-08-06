@@ -1783,9 +1783,11 @@ components:
         colorHex:
           type: string
           nullable: true
+        ownerId:
+          type: string
         ownerType:
           type: string
-          format: user|team
+          format: USER|TEAM
         createdAt:
           type: string
           format: YYYY-MM-DDTHH:mm:ss.sssZ
@@ -1797,24 +1799,8 @@ components:
           properties:
             owner:
               oneOf:
-                - allOf:
-                    - type: object
-                      properties:
-                        type:
-                          type: string
-                          example: user
-                      required:
-                        - type
-                    - $ref: '#/components/schemas/User'
-                - allOf:
-                    - type: object
-                      properties:
-                        type:
-                          type: string
-                          example: team
-                      required:
-                        - type
-                    - $ref: '#/components/schemas/Team'
+                - $ref: '#/components/schemas/User'
+                - $ref: '#/components/schemas/Team'
           required:
             - owner
         _links:
@@ -1868,7 +1854,7 @@ components:
                   example: https://example.com/boards/board-uuid/upload
               required:
                 - href
-            move-card:
+            moveCard:
               type: object
               properties:
                 href:
@@ -1891,7 +1877,7 @@ components:
             - comments
             - histories
             - upload
-            - move-card
+            - moveCard
             - owner
       required:
         - id
@@ -2216,8 +2202,8 @@ components:
           type: string
         contextType:
           type: string
-          format: board|column|card
-          example: board
+          format: BOARD|COLUMN|CARD
+          example: BOARD
         createdAt:
           type: string
           format: YYYY-MM-DDTHH:mm:ss.sssZ
@@ -2340,8 +2326,8 @@ components:
           type: string
         contextType:
           type: string
-          format: board|column|card
-          example: board
+          format: BOARD|COLUMN|CARD
+          example: BOARD
         contextKey:
           type: string
         contextValueBefore:
@@ -2692,8 +2678,8 @@ components:
           type: string
         role:
           type: string
-          format: owner|editor|viewer
-          example: owner
+          format: OWNER|EDITOR|VIEWER
+          example: OWNER
         createdAt:
           type: string
           format: YYYY-MM-DDTHH:mm:ss.sssZ

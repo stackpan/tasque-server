@@ -24,7 +24,7 @@ create table teams
     deleted_at          timestamptz
 );
 
-create type memberrole as enum ('owner', 'editor', 'viewer');
+create type memberrole as enum ('OWNER', 'EDITOR', 'VIEWER');
 
 create table team_members
 (
@@ -37,7 +37,7 @@ create table team_members
     constraint team_members_user_id_team_id_uk unique (user_id, team_id)
 );
 
-create type teaminvitationrole as enum ('editor', 'viewer');
+create type teaminvitationrole as enum ('EDITOR', 'VIEWER');
 
 create table user_team_invitations
 (
@@ -54,7 +54,7 @@ create table user_team_invitations
     constraint user_team_invitations_from_user_id_to_user_id_team_id_uk unique (from_user_id, to_user_id, team_id)
 );
 
-create type boardownertype as enum ('user', 'team');
+create type boardownertype as enum ('USER', 'TEAM');
 
 create table boards
 (
@@ -92,7 +92,7 @@ create table cards
     updated_at timestamptz   not null
 );
 
-create type commentcontexttype as enum ('board', 'column', 'card');
+create type commentcontexttype as enum ('BOARD', 'COLUMN', 'CARD');
 
 create table comments
 (
@@ -105,8 +105,8 @@ create table comments
     updated_at   timestamptz        not null
 );
 
-create type historyaction as enum ('create', 'update', 'delete');
-create type historycontexttype as enum ('board', 'column', 'card');
+create type historyaction as enum ('CREATE', 'UPDATE', 'DELETE');
+create type historycontexttype as enum ('BOARD', 'COLUMN', 'CARD');
 
 create table histories
 (

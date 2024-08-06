@@ -32,7 +32,7 @@ entity team_members {
     * id : uuid
     * user_id : uuid
     * team_id : uuid
-    * role : enum('owner', 'editor', 'viewer')
+    * role : enum('OWNER', 'EDITOR', 'VIEWER')
     * created_at : timestamptz
     * updated_at : timestamptz
     --
@@ -44,7 +44,7 @@ entity user_team_invitations {
     * from_user_id : uuid
     * to_user_id : uuid
     * team_id : uuid
-    * role : enum('editor', 'viewer')
+    * role : enum('EDITOR', 'VIEWER')
     is_accepted : boolean
     responded_at : timestamptz
     cancelled_at : timestamptz
@@ -61,7 +61,7 @@ entity boards {
     banner_picture_url : varchar(1024)
     color_hex : varchar(7)
     * owner_id : uuid
-    * owner_type : enum('user', 'team')
+    * owner_type : enum('USER', 'TEAM')
     * created_at : timestamptz
     * updated_at : timestamptz
     deleted_at : timestamptz
@@ -95,7 +95,7 @@ entity comments {
     * user_id : uuid
     * body : varchar(128)
     * context_id : uuid
-    * context_type : enum('board', 'column', 'card')
+    * context_type : enum('BOARD', 'COLUMN', 'CARD')
     * created_at : timestamptz
     * updated_at : timestamptz
     --
@@ -104,9 +104,9 @@ entity comments {
 entity histories {
     * id : uuid
     * user_id : uuid
-    * action : enum('create', 'update', 'delete')
+    * action : enum('CREATE', 'UPDATE', 'DELETE')
     * context_id : uuid
-    * context_type : enum('board', 'column', 'card')
+    * context_type : enum('BOARD', 'COLUMN', 'CARD')
     * context_key : varchar(256),
     context_value_before : text
     context_value_after : text

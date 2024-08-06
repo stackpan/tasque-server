@@ -6,8 +6,8 @@ properties:
     type: string
   contextType:
     type: string
-    format: 'board|column|card'
-    example: 'board'
+    format: 'BOARD|COLUMN|CARD'
+    example: 'BOARD'
   contextKey:
     type: string
   contextValueBefore:
