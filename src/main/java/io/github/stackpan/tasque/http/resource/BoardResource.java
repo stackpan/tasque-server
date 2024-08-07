@@ -4,6 +4,7 @@ import io.github.stackpan.tasque.entity.Board;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Value
+@Relation(itemRelation = "board", collectionRelation = "boards")
 public class BoardResource extends RepresentationModel<BoardResource> {
 
     UUID id;

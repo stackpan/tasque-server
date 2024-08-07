@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service.internal;
 
 import io.github.stackpan.tasque.entity.Board;
+import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.repository.BoardRepository;
 import io.github.stackpan.tasque.service.BoardService;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -15,6 +17,14 @@ import java.util.UUID;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
+
+    @Override
+    public List<Board> listByUserId(UUID userId) {
+        var user = new User();
+        user.setId(userId);
+
+        return boardRepository.findAllByOwner(user);
+    }
 
     @Override
     public Board getById(UUID boardId) {

@@ -31,6 +31,7 @@ public class BoardModelAssembler implements RepresentationModelAssembler<Board, 
 
         return HalModelBuilder.halModelOf(boardResource)
                 .embed(boardOwnerModel, LinkRelation.of("owner"))
+                .link(linkTo(methodOn(BoardController.class).listBoards(null)).withRel("boards"))
                 .link(linkTo(methodOn(BoardController.class).getBoard(entity.getId().toString(), null)).withSelfRel())
                 .build();
     }
