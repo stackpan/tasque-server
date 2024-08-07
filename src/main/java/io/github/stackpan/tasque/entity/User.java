@@ -67,7 +67,6 @@ public class User implements Serializable, UserDetails, BoardOwner {
 
     @Override
     public boolean isEnabled() {
-//        return Objects.isNull(deletedAt);
         return true;
     }
 }

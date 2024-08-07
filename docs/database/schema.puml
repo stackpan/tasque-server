@@ -61,7 +61,7 @@ entity boards {
     banner_picture_url : varchar(1024)
     color_hex : varchar(7)
     * owner_id : uuid
-    * owner_type : enum('USER', 'TEAM')
+    * owner_type : varchar(32)
     * created_at : timestamptz
     * updated_at : timestamptz
     deleted_at : timestamptz
@@ -95,7 +95,7 @@ entity comments {
     * user_id : uuid
     * body : varchar(128)
     * context_id : uuid
-    * context_type : enum('BOARD', 'COLUMN', 'CARD')
+    * context_type : varchar(32)
     * created_at : timestamptz
     * updated_at : timestamptz
     --
@@ -106,7 +106,7 @@ entity histories {
     * user_id : uuid
     * action : enum('CREATE', 'UPDATE', 'DELETE')
     * context_id : uuid
-    * context_type : enum('BOARD', 'COLUMN', 'CARD')
+    * context_type : varchar(32)
     * context_key : varchar(256),
     context_value_before : text
     context_value_after : text
