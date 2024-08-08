@@ -25,7 +25,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
     @Override
-    public List<Board> listByUserId(UUID userId) {
+    public List<Board> listAsUser(UUID userId) {
         var user = new User();
         user.setId(userId);
 
@@ -34,7 +34,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public Board createByUserId(CreateBoardDto data, UUID userId) {
+    public Board createAsUser(CreateBoardDto data, UUID userId) {
         var newBoard = new Board();
         newBoard.setName(data.name());
         newBoard.setDescription(data.description());
@@ -47,15 +47,22 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public Board getById(UUID boardId) {
+    public Board getAsUser(UUID boardId, UUID userId) {
+        var board = boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        System.out.println(board.getOwner());
+        System.out.println(user);
+        if (!board.getOwner().equals(user)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
         return boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Override
     @Transactional
-    public Board updateById(UUID boardId, UpdateBoardDto data, UUID userId) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    public Board updateByIdAsUser(UUID boardId, UpdateBoardDto data, UUID userId) {
         var board = boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
         if (!board.getOwner().equals(user)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 

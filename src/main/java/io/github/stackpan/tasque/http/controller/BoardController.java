@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -29,7 +31,7 @@ public class BoardController {
     @GetMapping
     public CollectionModel<RepresentationModel<BoardResource>> listBoards(JwtAuthenticationToken token) {
         var subject = (String) token.getTokenAttributes().get("sub");
-        var boards = boardService.listByUserId(UUIDs.fromString(subject))
+        var boards = boardService.listAsUser(UUID.fromString(subject))
                 .stream()
                 .map(board -> new BoardModelAssembler().toModel(board))
                 .toList();
@@ -43,7 +45,7 @@ public class BoardController {
     @PostMapping
     public ResponseEntity<RepresentationModel<BoardResource>> createBoard(@RequestBody @Valid CreateBoardRequest board, JwtAuthenticationToken token) {
         var subject = (String) token.getTokenAttributes().get("sub");
-        var createdBoard = boardService.createByUserId(CreateBoardDto.fromRequest(board), UUIDs.fromString(subject));
+        var createdBoard = boardService.createAsUser(CreateBoardDto.fromRequest(board), UUID.fromString(subject));
 
         var model = new BoardModelAssembler().toModel(createdBoard);
         return ResponseEntity.created(model.getRequiredLink("self").toUri()).body(model);
@@ -51,7 +53,8 @@ public class BoardController {
 
     @GetMapping("/{boardId}")
     public RepresentationModel<BoardResource> getBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
-        var board = boardService.getById(UUIDs.fromString(boardId));
+        var subject = (String) token.getTokenAttributes().get("sub");
+        var board = boardService.getAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(board);
     }
@@ -59,7 +62,7 @@ public class BoardController {
     @PutMapping("/{boardId}")
     public RepresentationModel<BoardResource> updateBoard(@PathVariable String boardId, @RequestBody @Valid UpdateBoardRequest board, JwtAuthenticationToken token) {
         var subject = (String) token.getTokenAttributes().get("sub");
-        var updatedBoard = boardService.updateById(UUIDs.fromString(boardId), UpdateBoardDto.fromRequest(board), UUIDs.fromString(subject));
+        var updatedBoard = boardService.updateByIdAsUser(UUIDs.fromString(boardId), UpdateBoardDto.fromRequest(board), UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(updatedBoard);
     }

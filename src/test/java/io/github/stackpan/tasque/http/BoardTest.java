@@ -248,6 +248,18 @@ public class BoardTest {
                     )
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        void byUnownedBoardShouldNotFound() throws Exception {
+            mockMvc.perform(get("/boards/7e885910-1df0-4744-8083-73e1d9769062")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
@@ -377,6 +389,29 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/boards/invaliduuid")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Board One",
+                        "description": "A long description of Updated Board One.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(get("/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
