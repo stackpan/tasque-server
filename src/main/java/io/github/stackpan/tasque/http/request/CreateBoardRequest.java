@@ -1,13 +1,22 @@
 package io.github.stackpan.tasque.http.request;
 
-import io.github.stackpan.tasque.validation.StringOnly;
+import io.github.stackpan.tasque.util.Regexps;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateBoardRequest(
-        @NotNull @StringOnly @Size(max = 64) String name,
-        @StringOnly @Size(max = 1024) String description,
-        @NotNull @Pattern(regexp = "^#[0-9a-f]{6}$", message = "must be valid color hex code") String colorHex
+        @NotNull
+        @Size(max = 64)
+        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.LimitedString.message}")
+        String name,
+
+        @Size(max = 1024)
+        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.LimitedString.message}")
+        String description,
+
+        @NotNull
+        @Pattern(regexp = Regexps.COLOR_HEX, message = "{validation.constraints.Pattern.ColorHex.message}")
+        String colorHex
 ) {
 }

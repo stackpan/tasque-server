@@ -178,6 +178,7 @@ public class BoardTest {
                     .andExpectAll(
                             jsonPath("$.message").value("Invalid payload."),
                             jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist(),
                             jsonPath("$._embedded.payloadErrors.colorHex").isArray()
                     );
         }
@@ -350,6 +351,7 @@ public class BoardTest {
                     .andExpectAll(
                             jsonPath("$.message").value("Invalid payload."),
                             jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist(),
                             jsonPath("$._embedded.payloadErrors.colorHex").isArray()
                     );
         }
