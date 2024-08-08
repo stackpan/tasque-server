@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service.internal;
 
 import io.github.stackpan.tasque.data.CreateBoardDto;
+import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.entity.Board;
 import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.repository.BoardRepository;
@@ -48,5 +49,20 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Board getById(UUID boardId) {
         return boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public Board updateById(UUID boardId, UpdateBoardDto data, UUID userId) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        var board = boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!board.getOwner().equals(user)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        board.setName(data.name());
+        board.setDescription(data.description());
+        board.setColorHex(data.colorHex());
+
+        return boardRepository.save(board);
     }
 }

@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service;
 
 import io.github.stackpan.tasque.data.CreateBoardDto;
+import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.entity.Board;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface BoardService {
 
     Board getById(UUID boardId);
 
+    Board updateById(UUID boardId, UpdateBoardDto data, UUID userId);
 }

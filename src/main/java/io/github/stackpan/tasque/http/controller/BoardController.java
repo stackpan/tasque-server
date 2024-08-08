@@ -1,8 +1,10 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.CreateBoardDto;
+import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.http.assembler.BoardModelAssembler;
 import io.github.stackpan.tasque.http.request.CreateBoardRequest;
+import io.github.stackpan.tasque.http.request.UpdateBoardRequest;
 import io.github.stackpan.tasque.http.resource.BoardResource;
 import io.github.stackpan.tasque.service.BoardService;
 import io.github.stackpan.tasque.util.UUIDs;
@@ -54,4 +56,11 @@ public class BoardController {
         return new BoardModelAssembler().toModel(board);
     }
 
+    @PutMapping("/{boardId}")
+    public RepresentationModel<BoardResource> updateBoard(@PathVariable String boardId, @RequestBody @Valid UpdateBoardRequest board, JwtAuthenticationToken token) {
+        var subject = (String) token.getTokenAttributes().get("sub");
+        var updatedBoard = boardService.updateById(UUIDs.fromString(boardId), UpdateBoardDto.fromRequest(board), UUIDs.fromString(subject));
+
+        return new BoardModelAssembler().toModel(updatedBoard);
+    }
 }
