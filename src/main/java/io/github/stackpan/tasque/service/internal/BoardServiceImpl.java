@@ -67,4 +67,12 @@ public class BoardServiceImpl implements BoardService {
 
         return boardRepository.save(board);
     }
+
+    @Override
+    public void deleteByIdAsUser(UUID boardId, UUID userId) {
+        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
+        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+
+        boardRepository.delete(board);
+    }
 }

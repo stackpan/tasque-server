@@ -150,7 +150,6 @@ public class BoardTest {
 
                         var createdId = JsonPath.<String>read(responseContent, "$.id");
                         var count = jdbcTemplate.queryForObject("select count(*) from boards where id = ?", Integer.class, UUID.fromString(createdId));
-
                         assertEquals(count, 1);
                     });
         }
@@ -250,7 +249,7 @@ public class BoardTest {
         }
 
         @Test
-        void byUnownedBoardShouldNotFound() throws Exception {
+        void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
@@ -268,7 +267,7 @@ public class BoardTest {
         private final String TARGET_ID = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
 
         @Test
-        void shouldReturnUpdateBoardAndChangedInDatabase() throws Exception {
+        void shouldReturnUpdatedBoardAndChangedOnDatabase() throws Exception {
             var oldBoardMap = jdbcTemplate.queryForMap("select * from boards where id = ?", UUID.fromString(TARGET_ID));
 
             var payload = """
@@ -402,7 +401,7 @@ public class BoardTest {
         }
 
         @Test
-        void byUnownedBoardShouldNotFound() throws Exception {
+        void byUnownedBoardIdShouldNotFound() throws Exception {
             var payload = """
                     {
                         "name": "Updated Board One",
@@ -420,6 +419,63 @@ public class BoardTest {
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    class DeleteBoard {
+
+        @Test
+        void shouldNoContentAndMissingFromDatabase() throws Exception {
+            String TARGET_ID = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
+
+            mockMvc.perform(delete("/boards/%s".formatted(TARGET_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNoContent());
+
+            var count = jdbcTemplate.queryForObject("select count(*) from boards where id = ?", Integer.class, UUID.fromString(TARGET_ID));
+            assertEquals(count, 0);
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/boards/invaliduuid")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/boards/7e885910-1df0-4744-8083-73e1d9769062")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
                     )
                     .andExpect(status().isNotFound());
         }

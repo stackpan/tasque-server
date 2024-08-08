@@ -66,4 +66,12 @@ public class BoardController {
 
         return new BoardModelAssembler().toModel(updatedBoard);
     }
+
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<Void> deleteBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
+        var subject = (String) token.getTokenAttributes().get("sub");
+        boardService.deleteByIdAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
+
+        return ResponseEntity.noContent().build();
+    }
 }

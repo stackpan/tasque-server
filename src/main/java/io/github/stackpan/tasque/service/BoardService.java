@@ -16,4 +16,6 @@ public interface BoardService {
     Board getAsUser(UUID boardId, UUID userId);
 
     Board updateByIdAsUser(UUID boardId, UpdateBoardDto data, UUID userId);
+
+    void deleteByIdAsUser(UUID boardId, UUID userId);
 }
