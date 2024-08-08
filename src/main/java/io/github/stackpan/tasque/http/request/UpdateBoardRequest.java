@@ -8,11 +8,11 @@ import jakarta.validation.constraints.Size;
 public record UpdateBoardRequest(
         @NotNull
         @Size(max = 64)
-        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.LimitedString.message}")
+        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.ValidString.message}")
         String name,
 
         @Size(max = 1024)
-        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.LimitedString.message}")
+        @Pattern(regexp = Regexps.LIMITED_STRING, message = "{validation.constraints.Pattern.ValidString.message}")
         String description,
 
         @NotNull
