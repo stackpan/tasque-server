@@ -8,10 +8,10 @@ entity users {
     last_name : varchar(64)
     profile_picture_url : varchar(1024)
     * password : varchar(4096)
-    email_verified_at : timestamptz
-    * created_at : timestamptz
-    * updated_at : timestamptz
-    deleted_at : timestamptz
+    email_verified_at : timestamp
+    * created_at : timestamp
+    * updated_at : timestamp
+    deleted_at : timestamp
     --
     unique(username)
     unique(email)
@@ -22,9 +22,9 @@ entity teams {
     * name : varchar(32)
     description: varchar(1024)
     profile_picture_url : varchar(1024)
-    * created_at : timestamptz
-    * updated_at : timestamptz
-    deleted_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
+    deleted_at : timestamp
     --
 }
 
@@ -33,8 +33,8 @@ entity team_members {
     * user_id : uuid
     * team_id : uuid
     * role : enum('OWNER', 'EDITOR', 'VIEWER')
-    * created_at : timestamptz
-    * updated_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
     --
     unique(user_id, team_id)
 }
@@ -46,10 +46,10 @@ entity user_team_invitations {
     * team_id : uuid
     * role : enum('EDITOR', 'VIEWER')
     is_accepted : boolean
-    responded_at : timestamptz
-    cancelled_at : timestamptz
-    * created_at : timestamptz
-    * updated_at : timestamptz
+    responded_at : timestamp
+    cancelled_at : timestamp
+    * created_at : timestamp
+    * updated_at : timestamp
     --
     unique(from_user_id, to_user_id, team_id)
 }
@@ -62,9 +62,9 @@ entity boards {
     color_hex : varchar(7)
     * owner_id : uuid
     * owner_type : varchar(32)
-    * created_at : timestamptz
-    * updated_at : timestamptz
-    deleted_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
+    deleted_at : timestamp
     --
 }
 
@@ -75,8 +75,8 @@ entity columns {
     description : varchar(128)
     color_hex : varchar(7)
     next_column_id : uuid
-    * created_at : timestamptz
-    * updated_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
     --
 }
 
@@ -85,8 +85,8 @@ entity cards {
     * column_id : uuid
     * body : varchar(1024)
     color_hex : varchar(7)
-    * created_at : timestamptz
-    * updated_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
     --
 }
 
@@ -96,8 +96,8 @@ entity comments {
     * body : varchar(128)
     * context_id : uuid
     * context_type : varchar(32)
-    * created_at : timestamptz
-    * updated_at : timestamptz
+    * created_at : timestamp
+    * updated_at : timestamp
     --
 }
 
@@ -110,7 +110,7 @@ entity histories {
     * context_key : varchar(256),
     context_value_before : text
     context_value_after : text
-    * created_at : timestamptz
+    * created_at : timestamp
     --
 }
 

@@ -7,10 +7,10 @@ create table users
     last_name           varchar(64),
     profile_picture_url varchar(1024),
     password            varchar(4096) not null,
-    email_verified_at   timestamptz,
-    created_at          timestamptz   not null,
-    updated_at          timestamptz   not null,
-    deleted_at          timestamptz
+    email_verified_at   timestamp,
+    created_at          timestamp     not null,
+    updated_at          timestamp     not null,
+    deleted_at          timestamp
 );
 
 create table teams
@@ -19,21 +19,21 @@ create table teams
     name                varchar(32) not null,
     description         varchar(1024),
     profile_picture_url varchar(1024),
-    created_at          timestamptz not null,
-    updated_at          timestamptz not null,
-    deleted_at          timestamptz
+    created_at          timestamp   not null,
+    updated_at          timestamp   not null,
+    deleted_at          timestamp
 );
 
 create type memberrole as enum ('OWNER', 'EDITOR', 'VIEWER');
 
 create table team_members
 (
-    id         uuid        not null primary key,
-    user_id    uuid        not null references users (id),
-    team_id    uuid        not null references teams (id),
-    role       memberrole  not null,
-    created_at timestamptz not null,
-    updated_at timestamptz not null,
+    id         uuid       not null primary key,
+    user_id    uuid       not null references users (id),
+    team_id    uuid       not null references teams (id),
+    role       memberrole not null,
+    created_at timestamp  not null,
+    updated_at timestamp  not null,
     constraint team_members_user_id_team_id_uk unique (user_id, team_id)
 );
 
@@ -47,10 +47,10 @@ create table user_team_invitations
     team_id      uuid               not null references teams (id),
     role         teaminvitationrole not null,
     is_accepted  boolean,
-    responded_at timestamptz,
-    cancelled_at timestamptz,
-    created_at   timestamptz        not null,
-    updated_at   timestamptz        not null,
+    responded_at timestamp,
+    cancelled_at timestamp,
+    created_at   timestamp          not null,
+    updated_at   timestamp          not null,
     constraint user_team_invitations_from_user_id_to_user_id_team_id_uk unique (from_user_id, to_user_id, team_id)
 );
 
@@ -63,9 +63,9 @@ create table boards
     color_hex          varchar(7),
     owner_id           uuid        not null,
     owner_type         varchar(32) not null,
-    created_at         timestamptz not null,
-    updated_at         timestamptz not null,
-    deleted_at         timestamptz,
+    created_at         timestamp   not null,
+    updated_at         timestamp   not null,
+    deleted_at         timestamp,
     check (owner_type in ('USER', 'TEAM')),
     check (color_hex ~ '^#[0-9a-f]{6}$')
 );
@@ -78,8 +78,8 @@ create table columns
     description    varchar(128),
     color_hex      varchar(7),
     next_column_id uuid        not null references columns (id),
-    created_at     timestamptz not null,
-    updated_at     timestamptz not null,
+    created_at     timestamp   not null,
+    updated_at     timestamp   not null,
     check (color_hex ~ '^#[0-9a-f]{6}$')
 );
 
@@ -89,8 +89,8 @@ create table cards
     column_id  uuid          not null references columns (id),
     body       varchar(1024) not null,
     color_hex  varchar(7),
-    created_at timestamptz   not null,
-    updated_at timestamptz   not null,
+    created_at timestamp     not null,
+    updated_at timestamp     not null,
     check (color_hex ~ '^#[0-9a-f]{6}$')
 );
 
@@ -101,8 +101,8 @@ create table comments
     body         varchar(128) not null,
     context_id   uuid         not null,
     context_type varchar(32)  not null,
-    created_at   timestamptz  not null,
-    updated_at   timestamptz  not null,
+    created_at   timestamp    not null,
+    updated_at   timestamp    not null,
     check (context_type in ('BOARD', 'COLUMN', 'CARD'))
 );
 
@@ -118,6 +118,6 @@ create table histories
     context_key          varchar(256)  not null,
     context_value_before text,
     context_value_after  text,
-    created_at           timestamptz   not null,
+    created_at           timestamp     not null,
     check (context_type in ('BOARD', 'COLUMN', 'CARD'))
 );
