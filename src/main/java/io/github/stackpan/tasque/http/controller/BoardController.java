@@ -7,6 +7,7 @@ import io.github.stackpan.tasque.http.request.CreateBoardRequest;
 import io.github.stackpan.tasque.http.request.UpdateBoardRequest;
 import io.github.stackpan.tasque.http.resource.BoardResource;
 import io.github.stackpan.tasque.service.BoardService;
+import io.github.stackpan.tasque.util.Jwts;
 import io.github.stackpan.tasque.util.UUIDs;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class BoardController {
 
     @GetMapping
     public CollectionModel<RepresentationModel<BoardResource>> listBoards(JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         var boards = boardService.listAsUser(UUID.fromString(subject))
                 .stream()
                 .map(board -> new BoardModelAssembler().toModel(board))
@@ -44,7 +45,7 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<RepresentationModel<BoardResource>> createBoard(@RequestBody @Valid CreateBoardRequest board, JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         var createdBoard = boardService.createAsUser(CreateBoardDto.fromRequest(board), UUID.fromString(subject));
 
         var model = new BoardModelAssembler().toModel(createdBoard);
@@ -53,7 +54,7 @@ public class BoardController {
 
     @GetMapping("/{boardId}")
     public RepresentationModel<BoardResource> getBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         var board = boardService.getAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(board);
@@ -61,7 +62,7 @@ public class BoardController {
 
     @PutMapping("/{boardId}")
     public RepresentationModel<BoardResource> updateBoard(@PathVariable String boardId, @RequestBody @Valid UpdateBoardRequest board, JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         var updatedBoard = boardService.updateByIdAsUser(UUIDs.fromString(boardId), UpdateBoardDto.fromRequest(board), UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(updatedBoard);
@@ -69,7 +70,7 @@ public class BoardController {
 
     @DeleteMapping("/{boardId}")
     public ResponseEntity<Void> deleteBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         boardService.deleteByIdAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
 
         return ResponseEntity.noContent().build();

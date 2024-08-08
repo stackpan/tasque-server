@@ -7,6 +7,7 @@ import io.github.stackpan.tasque.http.resource.AuthResource;
 import io.github.stackpan.tasque.http.resource.UserResource;
 import io.github.stackpan.tasque.service.AuthService;
 import io.github.stackpan.tasque.service.UserService;
+import io.github.stackpan.tasque.util.Jwts;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
@@ -39,7 +40,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public EntityModel<UserResource> me(JwtAuthenticationToken token) {
-        var subject = (String) token.getTokenAttributes().get("sub");
+        var subject = Jwts.getSubject(token);
         var user = userService.getById(UUID.fromString(subject));
 
         return new AuthModelAssembler().toModel(user);
