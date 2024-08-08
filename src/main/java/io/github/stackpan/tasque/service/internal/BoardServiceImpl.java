@@ -5,13 +5,12 @@ import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.entity.Board;
 import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.repository.BoardRepository;
-import io.github.stackpan.tasque.repository.UserRepository;
 import io.github.stackpan.tasque.service.BoardService;
+import io.github.stackpan.tasque.service.util.BoardServiceUtil;
+import io.github.stackpan.tasque.service.util.UserServiceUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +19,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
-    private final UserRepository userRepository;
-
     private final BoardRepository boardRepository;
+
+    private final BoardServiceUtil boardServiceUtil;
+
+    private final UserServiceUtil userServiceUtil;
 
     @Override
     public List<Board> listAsUser(UUID userId) {
@@ -40,7 +41,7 @@ public class BoardServiceImpl implements BoardService {
         newBoard.setDescription(data.description());
         newBoard.setColorHex(data.colorHex());
 
-        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        var user = userServiceUtil.findByIdOrThrowsUnauthorized(userId);
         newBoard.setOwner(user);
 
         return boardRepository.save(newBoard);
@@ -48,23 +49,17 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public Board getAsUser(UUID boardId, UUID userId) {
-        var board = boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
+        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
 
-        System.out.println(board.getOwner());
-        System.out.println(user);
-        if (!board.getOwner().equals(user)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
-        return boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return board;
     }
 
     @Override
     @Transactional
     public Board updateByIdAsUser(UUID boardId, UpdateBoardDto data, UUID userId) {
-        var board = boardRepository.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        if (!board.getOwner().equals(user)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
+        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
 
         board.setName(data.name());
         board.setDescription(data.description());
