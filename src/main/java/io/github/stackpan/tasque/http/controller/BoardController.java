@@ -1,17 +1,18 @@
 package io.github.stackpan.tasque.http.controller;
 
+import io.github.stackpan.tasque.data.CreateBoardDto;
 import io.github.stackpan.tasque.http.assembler.BoardModelAssembler;
+import io.github.stackpan.tasque.http.request.CreateBoardRequest;
 import io.github.stackpan.tasque.http.resource.BoardResource;
 import io.github.stackpan.tasque.service.BoardService;
 import io.github.stackpan.tasque.util.UUIDs;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -37,9 +38,19 @@ public class BoardController {
         );
     }
 
+    @PostMapping
+    public ResponseEntity<RepresentationModel<BoardResource>> createBoard(@RequestBody @Valid CreateBoardRequest board, JwtAuthenticationToken token) {
+        var subject = (String) token.getTokenAttributes().get("sub");
+        var createdBoard = boardService.createByUserId(CreateBoardDto.fromRequest(board), UUIDs.fromString(subject));
+
+        var model = new BoardModelAssembler().toModel(createdBoard);
+        return ResponseEntity.created(model.getRequiredLink("self").toUri()).body(model);
+    }
+
     @GetMapping("/{boardId}")
     public RepresentationModel<BoardResource> getBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
         var board = boardService.getById(UUIDs.fromString(boardId));
+
         return new BoardModelAssembler().toModel(board);
     }
 

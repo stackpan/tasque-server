@@ -1,7 +1,9 @@
 package io.github.stackpan.tasque.http;
 
+import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
 import io.github.stackpan.tasque.util.ExtMediaType;
+import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +11,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -23,12 +29,15 @@ import static org.hamcrest.Matchers.*;
 @SpringBootTest
 @Import(TestContainersConfig.class)
 @Sql(scripts = {"classpath:datasources/user.sql", "classpath:datasources/board.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(statements = {"delete from boards", "delete from users"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @AutoConfigureMockMvc
-@Transactional
 public class BoardTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Nested
     class ListBoard {
@@ -80,6 +89,94 @@ public class BoardTest {
                             jsonPath("$._embedded.boards[*]._embedded.owner.updatedAt", everyItem(equalTo("2024-07-28T00:00:00Z"))),
                             jsonPath("$._embedded.boards[*]._embedded.owner._links.self.href", everyItem(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6"))),
                             jsonPath("$._links.self.href").value(containsString("/boards"))
+                    );
+        }
+    }
+
+    @Nested
+    class CreateBoard {
+
+        @Test
+        void shouldCreatedAndReturnCreatedBoardAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                        "name": "Newly Created Board",
+                        "description": "A long description of Newly Created Board.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(post("/boards")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/boards/" + Regexps.UUID)))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("$.name").value("Newly Created Board"),
+                            jsonPath("$.description").value("A long description of Newly Created Board."),
+                            jsonPath("$.bannerPictureUrl").isEmpty(),
+                            jsonPath("$.colorHex").value("#ffffff"),
+                            jsonPath("$.ownerId").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$.ownerType").value("USER"),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$._embedded.owner.username").value("firstone"),
+                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("First"),
+                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
+                            jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
+                            jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
+                            jsonPath("$._links.boards.href").value(containsString("/boards")),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/boards/" + Regexps.UUID))
+                    )
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var count = jdbcTemplate.queryForObject("select count(*) from boards where id = ?", Integer.class, UUID.fromString(createdId));
+
+                        assertEquals(count, 1);
+                    });
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "name": 999,
+                        "colorHex": "#fnffff"
+                    }
+                    """;
+
+            mockMvc.perform(post("/boards")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.colorHex").isArray()
                     );
         }
     }
