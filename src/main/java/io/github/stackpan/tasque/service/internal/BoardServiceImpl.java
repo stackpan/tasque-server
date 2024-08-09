@@ -38,8 +38,8 @@ public class BoardServiceImpl implements BoardService {
     public Board createAsUser(CreateBoardDto data, UUID userId) {
         var newBoard = new Board();
         newBoard.setName(data.name());
-        newBoard.setDescription(data.description());
-        newBoard.setColorHex(data.colorHex());
+        newBoard.setDescription(data.description().orElse(null));
+        newBoard.setColorHex(data.colorHex().orElse(null));
 
         var user = userServiceUtil.findByIdOrThrowsUnauthorized(userId);
         newBoard.setOwner(user);
@@ -62,8 +62,8 @@ public class BoardServiceImpl implements BoardService {
         boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
 
         board.setName(data.name());
-        board.setDescription(data.description());
-        board.setColorHex(data.colorHex());
+        board.setDescription(data.description().orElse(null));
+        board.setColorHex(data.colorHex().orElse(null));
 
         return boardRepository.save(board);
     }

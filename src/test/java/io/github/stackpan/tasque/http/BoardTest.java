@@ -21,8 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -153,6 +152,62 @@ public class BoardTest {
                         assertEquals(count, 1);
                     });
         }
+
+        @Test
+        void withNullablePayloadShouldCreatedAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                        "name": "Newly Created Board",
+                        "description": null,
+                        "colorHex": null
+                    }
+                    """;
+
+            mockMvc.perform(post("/boards")
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/boards/" + Regexps.UUID)))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("$.name").value("Newly Created Board"),
+                            jsonPath("$.description").isEmpty(),
+                            jsonPath("$.bannerPictureUrl").isEmpty(),
+                            jsonPath("$.colorHex").isEmpty(),
+                            jsonPath("$.ownerId").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$.ownerType").value("USER"),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$._embedded.owner.username").value("firstone"),
+                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("First"),
+                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
+                            jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
+                            jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
+                            jsonPath("$._links.boards.href").value(containsString("/boards")),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/boards/" + Regexps.UUID))
+                    )
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var count = jdbcTemplate.queryForObject("select count(*) from boards where id = ?", Integer.class, UUID.fromString(createdId));
+                        assertEquals(count, 1);
+                    });
+        }
+
 
         @Test
         void withInvalidPayloadShouldBadRequest() throws Exception {
@@ -320,6 +375,66 @@ public class BoardTest {
                         assertEquals(updatedBoardMap.get("name"), JsonPath.<String>read(payload, "$.name"));
                         assertEquals(updatedBoardMap.get("description"), JsonPath.<String>read(payload, "$.description"));
                         assertEquals(updatedBoardMap.get("color_hex"), JsonPath.<String>read(payload, "$.colorHex"));
+
+                        var oldBoardUpdatedAt = ((Timestamp) oldBoardMap.get("updated_at")).toInstant();
+                        var updatedBoardUpdatedAt = ((Timestamp) updatedBoardMap.get("updated_at")).toInstant();
+                        assertTrue(updatedBoardUpdatedAt.isAfter(oldBoardUpdatedAt));
+                    });
+        }
+
+        @Test
+        void withNullablePayloadShouldReturnUpdatedBoardAndChangedOnDatabase() throws Exception {
+            var oldBoardMap = jdbcTemplate.queryForMap("select * from boards where id = ?", UUID.fromString(TARGET_ID));
+
+            var payload = """
+                    {
+                        "name": "Newly Created Board",
+                        "description": null,
+                        "colorHex": null
+                    }
+                    """;
+
+            mockMvc.perform(put("/boards/%s".formatted(TARGET_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.id").value(TARGET_ID),
+                            jsonPath("$.name").value(JsonPath.<String>read(payload, "$.name")),
+                            jsonPath("$.description").value(JsonPath.<String>read(payload, "$.description")),
+                            jsonPath("$.bannerPictureUrl").isEmpty(),
+                            jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
+                            jsonPath("$.ownerId").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$.ownerType").value("USER"),
+                            jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
+                            jsonPath("$._embedded.owner.username").value("firstone"),
+                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("First"),
+                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
+                            jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
+                            jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
+                            jsonPath("$._links.boards.href").value(containsString("/boards")),
+                            jsonPath("$._links.self.href").value(containsString("/boards/%s".formatted(TARGET_ID)))
+                    )
+                    .andDo(result -> {
+                        var updatedBoardMap = jdbcTemplate.queryForMap("select * from boards where id = ?", UUID.fromString(TARGET_ID));
+
+                        assertEquals(updatedBoardMap.get("name"), JsonPath.<String>read(payload, "$.name"));
+                        assertNull(updatedBoardMap.get("description"));
+                        assertNull(updatedBoardMap.get("color_hex"));
 
                         var oldBoardUpdatedAt = ((Timestamp) oldBoardMap.get("updated_at")).toInstant();
                         var updatedBoardUpdatedAt = ((Timestamp) updatedBoardMap.get("updated_at")).toInstant();
