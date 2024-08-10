@@ -46,7 +46,7 @@ public class BoardTest {
 
         @Test
         void shouldReturnListOfBoard() throws Exception {
-            mockMvc.perform(get("/boards")
+            mockMvc.perform(get("/api/boards")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -90,7 +90,7 @@ public class BoardTest {
                             jsonPath("$._embedded.boards[*]._embedded.owner.createdAt", everyItem(equalTo("2024-07-28T00:00:00Z"))),
                             jsonPath("$._embedded.boards[*]._embedded.owner.updatedAt", everyItem(equalTo("2024-07-28T00:00:00Z"))),
                             jsonPath("$._embedded.boards[*]._embedded.owner._links.self.href", everyItem(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6"))),
-                            jsonPath("$._links.self.href").value(containsString("/boards"))
+                            jsonPath("$._links.self.href").value(containsString("/api/boards"))
                     );
         }
     }
@@ -108,7 +108,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(post("/boards")
+            mockMvc.perform(post("/api/boards")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -120,7 +120,7 @@ public class BoardTest {
                     )
                     .andExpect(status().isCreated())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
-                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/boards/" + Regexps.UUID)))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/boards/" + Regexps.UUID)))
                     .andExpectAll(
                             jsonPath("$.id", matchesPattern(Regexps.UUID)),
                             jsonPath("$.name").value("Newly Created Board"),
@@ -141,8 +141,8 @@ public class BoardTest {
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
-                            jsonPath("$._links.boards.href").value(containsString("/boards")),
-                            jsonPath("$._links.self.href", matchesPattern("^.*/boards/" + Regexps.UUID))
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + Regexps.UUID))
                     )
                     .andDo(result -> {
                         var responseContent = result.getResponse().getContentAsString();
@@ -218,7 +218,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(post("/boards")
+            mockMvc.perform(post("/api/boards")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -246,7 +246,7 @@ public class BoardTest {
         void shouldReturnBoard() throws Exception {
             var targetId = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
 
-            mockMvc.perform(get("/boards/%s".formatted(targetId))
+            mockMvc.perform(get("/api/boards/%s".formatted(targetId))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -275,14 +275,14 @@ public class BoardTest {
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
-                            jsonPath("$._links.boards.href").value(containsString("/boards")),
-                            jsonPath("$._links.self.href").value(containsString("/boards/%s".formatted(targetId)))
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s".formatted(targetId)))
                     );
         }
 
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
-            mockMvc.perform(get("/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+            mockMvc.perform(get("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -294,7 +294,7 @@ public class BoardTest {
 
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
-            mockMvc.perform(get("/boards/invaliduuid")
+            mockMvc.perform(get("/api/boards/invaliduuid")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -306,7 +306,7 @@ public class BoardTest {
 
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
-            mockMvc.perform(get("/boards/7e885910-1df0-4744-8083-73e1d9769062")
+            mockMvc.perform(get("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -334,7 +334,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(put("/boards/%s".formatted(TARGET_ID))
+            mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -366,8 +366,8 @@ public class BoardTest {
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
-                            jsonPath("$._links.boards.href").value(containsString("/boards")),
-                            jsonPath("$._links.self.href").value(containsString("/boards/%s".formatted(TARGET_ID)))
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s".formatted(TARGET_ID)))
                     )
                     .andDo(result -> {
                         var updatedBoardMap = jdbcTemplate.queryForMap("select * from boards where id = ?", UUID.fromString(TARGET_ID));
@@ -451,7 +451,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(put("/boards/%s".formatted(TARGET_ID))
+            mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -481,7 +481,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(put("/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+            mockMvc.perform(put("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -504,7 +504,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(put("/boards/invaliduuid")
+            mockMvc.perform(put("/api/boards/invaliduuid")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -527,7 +527,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(get("/boards/7e885910-1df0-4744-8083-73e1d9769062")
+            mockMvc.perform(get("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -548,7 +548,7 @@ public class BoardTest {
         void shouldNoContentAndMissingFromDatabase() throws Exception {
             String TARGET_ID = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
 
-            mockMvc.perform(delete("/boards/%s".formatted(TARGET_ID))
+            mockMvc.perform(delete("/api/boards/%s".formatted(TARGET_ID))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -563,7 +563,7 @@ public class BoardTest {
 
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
-            mockMvc.perform(delete("/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+            mockMvc.perform(delete("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -575,7 +575,7 @@ public class BoardTest {
 
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
-            mockMvc.perform(delete("/boards/invaliduuid")
+            mockMvc.perform(delete("/api/boards/invaliduuid")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -587,7 +587,7 @@ public class BoardTest {
 
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
-            mockMvc.perform(delete("/boards/7e885910-1df0-4744-8083-73e1d9769062")
+            mockMvc.perform(delete("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
