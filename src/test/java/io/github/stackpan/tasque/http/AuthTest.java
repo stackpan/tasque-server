@@ -43,7 +43,7 @@ public class AuthTest {
                     }
                     """;
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -54,7 +54,7 @@ public class AuthTest {
                             jsonPath("$.token").isString(),
                             jsonPath("$.type").value("JWT"),
                             jsonPath("$.expiresAt", matchesPattern(Regexps.TIMESTAMP)),
-                            jsonPath("$._links.me.href").value(containsString("/auth/me"))
+                            jsonPath("$._links.me.href").value(containsString("/api/auth/me"))
                     );
         }
 
@@ -67,7 +67,7 @@ public class AuthTest {
                     }
                     """;
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -78,7 +78,7 @@ public class AuthTest {
                             jsonPath("$.token").isString(),
                             jsonPath("$.type").value("JWT"),
                             jsonPath("$.expiresAt", matchesPattern(Regexps.TIMESTAMP)),
-                            jsonPath("$._links.me.href").value(containsString("/auth/me"))
+                            jsonPath("$._links.me.href").value(containsString("/api/auth/me"))
                     );
         }
 
@@ -90,7 +90,7 @@ public class AuthTest {
                     }
                     """;
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -113,7 +113,7 @@ public class AuthTest {
                     }
                     """;
 
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -127,7 +127,7 @@ public class AuthTest {
 
         @Test
         void shouldReturnUser() throws Exception {
-            mockMvc.perform(get("/auth/me")
+            mockMvc.perform(get("/api/auth/me")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -146,16 +146,16 @@ public class AuthTest {
                             jsonPath("$.emailVerifiedAt").isEmpty(),
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$.updatedAt").value("2024-07-28T00:00:00Z"),
-                            jsonPath("$._links.self.href").value(containsString("/auth/me")),
-                            jsonPath("$._links.upload.href").value(containsString("/auth/me/upload")),
-                            jsonPath("$._links.changePassword.href").value(containsString("/auth/me/change-password")),
+                            jsonPath("$._links.self.href").value(containsString("/api/auth/me")),
+                            jsonPath("$._links.upload.href").value(containsString("/api/auth/me/upload")),
+                            jsonPath("$._links.changePassword.href").value(containsString("/api/auth/me/change-password")),
                             jsonPath("$._links.user.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6"))
                     );
         }
 
         @Test
         void unauthenticatedShouldUnauthorized() throws Exception {
-            mockMvc.perform(get("/auth/me"))
+            mockMvc.perform(get("/api/auth/me"))
                     .andExpect(status().isUnauthorized());
         }
     }
