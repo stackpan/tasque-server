@@ -6,8 +6,6 @@ import io.github.stackpan.tasque.util.ExtMediaType;
 import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,7 +32,6 @@ import static org.hamcrest.Matchers.*;
 @AutoConfigureMockMvc
 public class BoardTest {
 
-    private static final Logger log = LoggerFactory.getLogger(BoardTest.class);
     @Autowired
     private MockMvc mockMvc;
 
@@ -163,7 +160,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(post("/boards")
+            mockMvc.perform(post("/api/boards")
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -175,7 +172,7 @@ public class BoardTest {
                     )
                     .andExpect(status().isCreated())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
-                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/boards/" + Regexps.UUID)))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/boards/" + Regexps.UUID)))
                     .andExpectAll(
                             jsonPath("$.id", matchesPattern(Regexps.UUID)),
                             jsonPath("$.name").value("Newly Created Board"),
@@ -196,8 +193,8 @@ public class BoardTest {
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
-                            jsonPath("$._links.boards.href").value(containsString("/boards")),
-                            jsonPath("$._links.self.href", matchesPattern("^.*/boards/" + Regexps.UUID))
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + Regexps.UUID))
                     )
                     .andDo(result -> {
                         var responseContent = result.getResponse().getContentAsString();
@@ -394,7 +391,7 @@ public class BoardTest {
                     }
                     """;
 
-            mockMvc.perform(put("/boards/%s".formatted(TARGET_ID))
+            mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -426,8 +423,8 @@ public class BoardTest {
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner._links.self.href").value(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6")),
-                            jsonPath("$._links.boards.href").value(containsString("/boards")),
-                            jsonPath("$._links.self.href").value(containsString("/boards/%s".formatted(TARGET_ID)))
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s".formatted(TARGET_ID)))
                     )
                     .andDo(result -> {
                         var updatedBoardMap = jdbcTemplate.queryForMap("select * from boards where id = ?", UUID.fromString(TARGET_ID));
