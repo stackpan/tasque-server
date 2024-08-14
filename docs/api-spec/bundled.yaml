@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Tasque API
   description: Tasque API
-  version: 1.0.0
+  version: 1.0.3
 servers:
   - url: localhost:8080
 security:
@@ -2024,12 +2024,12 @@ components:
               required:
                 - href
               nullable: true
-            prev:
+            cards:
               type: object
               properties:
                 href:
                   type: string
-                  example: https://example.com/boards/board-uuid/columns/column-uuid
+                  example: https://example.com/boards/board-uuid/columns/column-uuid/cards
               required:
                 - href
               nullable: true
@@ -2039,7 +2039,7 @@ components:
             - columns
             - self
             - next
-            - prev
+            - cards
       required:
         - id
         - name
