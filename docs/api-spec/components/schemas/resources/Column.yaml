@@ -63,12 +63,12 @@ properties:
         required:
           - href
         nullable: true
-      prev:
+      cards:
         type: object
         properties:
           href:
             type: string
-            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
+            example: 'https://example.com/boards/board-uuid/columns/column-uuid/cards'
         required:
           - href
         nullable: true
@@ -78,7 +78,7 @@ properties:
       - columns
       - self
       - next
-      - prev
+      - cards
 required:
   - id
   - name
