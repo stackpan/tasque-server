@@ -103,6 +103,30 @@ public class ColumnTest {
                             jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns".formatted(BOARD_ID)))
                     );
         }
+
+        @Test
+        void byUnknownBoardIdShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/boards/%s/columns".formatted("0a2b0b12-1559-41cf-a4bd-a44fa0957b86"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/boards/%s/columns".formatted("7e885910-1df0-4744-8083-73e1d9769062"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
