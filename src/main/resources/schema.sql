@@ -77,7 +77,7 @@ create table columns
     name           varchar(64) not null,
     description    varchar(128),
     color_hex      varchar(7),
-    next_column_id uuid        not null references columns (id),
+    next_column_id uuid        references columns (id),
     created_at     timestamp   not null,
     updated_at     timestamp   not null,
     check (color_hex ~ '^#[0-9a-f]{6}$')
