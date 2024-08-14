@@ -43,7 +43,14 @@ public class ColumnController {
     }
 
     @GetMapping("/{columnId}")
-    public Object getColumn(@PathVariable String boardId, @PathVariable String columnId, JwtAuthenticationToken token) {
-        return null;
+    public RepresentationModel<ColumnResource> getColumn(@PathVariable String boardId, @PathVariable String columnId, JwtAuthenticationToken token) {
+        var subject = Jwts.getSubject(token);
+        var column = columnService.getByBoardIdAndId(
+                UUIDs.fromString(boardId),
+                UUIDs.fromString(columnId),
+                UUID.fromString(subject)
+        );
+
+        return new ColumnModelAssembler().toModel(column);
     }
 }

@@ -9,4 +9,6 @@ public interface ColumnService {
 
     List<BoardColumn> listByBoardId(UUID boardId, UUID userId);
 
+    BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId, UUID userId);
+
 }
