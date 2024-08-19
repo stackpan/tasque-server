@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Tasque API
   description: Tasque API
-  version: 1.0.3
+  version: 1.1.0
 servers:
   - url: localhost:8080
 tags:

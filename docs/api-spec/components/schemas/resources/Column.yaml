@@ -2,15 +2,14 @@ type: object
 properties:
   id:
     type: string
+  position:
+    type: integer
   name:
     type: string
   description:
     type: string
     nullable: true
   colorHex:
-    type: string
-    nullable: true
-  nextColumnId:
     type: string
     nullable: true
   createdAt:
@@ -54,15 +53,6 @@ properties:
             example: 'https://example.com/boards/board-uuid/columns/column-uuid'
         required:
           - href
-      next:
-        type: object
-        properties:
-          href:
-            type: string
-            example: 'https://example.com/boards/board-uuid/columns/column-uuid'
-        required:
-          - href
-        nullable: true
       cards:
         type: object
         properties:
@@ -77,14 +67,13 @@ properties:
       - board
       - columns
       - self
-      - next
       - cards
 required:
   - id
+  - position
   - name
   - description
   - colorHex
-  - nextColumnId
   - createdAt
   - updatedAt
   - _links
