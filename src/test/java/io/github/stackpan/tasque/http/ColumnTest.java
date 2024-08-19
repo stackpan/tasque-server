@@ -1,7 +1,9 @@
 package io.github.stackpan.tasque.http;
 
+import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
 import io.github.stackpan.tasque.util.ExtMediaType;
+import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +11,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -126,6 +133,143 @@ public class ColumnTest {
                             )
                     )
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    class PostColumn {
+
+        @Test
+        void atLastIndexShouldCreatedAndReturnCreatedColumnAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID)))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("$.name").value(JsonPath.<String>read(payload, "$.name")),
+                            jsonPath("$.description").value(JsonPath.<String>read(payload, "$.description")),
+                            jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
+                            jsonPath("$.nextColumnId").isEmpty(),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID)),
+                            jsonPath("$._links.next").doesNotExist()
+//                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
+                    )
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var createdUuid = UUID.fromString(createdId);
+                        var count = jdbcTemplate.queryForObject("SELECT count(*) FROM columns WHERE id = ?", Integer.class, createdUuid);
+                        assertEquals(count, 1);
+
+                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
+                        var nextColumnIds = boardColumns.stream()
+                                .map(object -> object.get("next_column_id"))
+                                .toArray();
+                        UUID[] nextColumnIdExpectation = {
+                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
+                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
+                                createdUuid,
+                                null
+                        };
+                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                    });
+        }
+
+        @Test
+        void atMiddleIndex() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff",
+                        "nextColumnId": "f6968c9a-8fc3-4180-96be-a09809542339"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var createdUuid = UUID.fromString(createdId);
+
+                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
+                        var nextColumnIds = boardColumns.stream()
+                                .map(object -> object.get("next_column_id"))
+                                .toArray();
+                        UUID[] nextColumnIdExpectation = {
+                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
+                                createdUuid,
+                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
+                                null
+                        };
+                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                    });
+        }
+
+        @Test
+        void atFirstIndex() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff",
+                        "nextColumnId": "f6968c9a-8fc3-4180-96be-a09809542339"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(result -> {
+                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
+                        var nextColumnIds = boardColumns.stream()
+                                .map(object -> object.get("next_column_id"))
+                                .toArray();
+                        UUID[] nextColumnIdExpectation = {
+                                UUID.fromString("7ab312f3-2661-4de4-9755-42d194c253c2"),
+                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
+                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
+                                null
+                        };
+                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                    });
         }
     }
 

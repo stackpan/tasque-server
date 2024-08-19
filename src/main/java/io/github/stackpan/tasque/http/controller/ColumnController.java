@@ -1,18 +1,19 @@
 package io.github.stackpan.tasque.http.controller;
 
+import io.github.stackpan.tasque.data.CreateColumnDto;
 import io.github.stackpan.tasque.http.assembler.ColumnModelAssembler;
+import io.github.stackpan.tasque.http.request.CreateColumnRequest;
 import io.github.stackpan.tasque.http.resource.ColumnResource;
 import io.github.stackpan.tasque.service.ColumnService;
 import io.github.stackpan.tasque.util.Jwts;
 import io.github.stackpan.tasque.util.UUIDs;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -40,6 +41,15 @@ public class ColumnController {
                 linkTo(methodOn(BoardController.class).getBoard(boardId, null)).withRel("board"),
                 linkTo(methodOn(ColumnController.class).listColumns(boardId, null)).withSelfRel()
         );
+    }
+
+    @PostMapping
+    public ResponseEntity<RepresentationModel<ColumnResource>> getColumn(@PathVariable String boardId, @RequestBody @Valid CreateColumnRequest payload, JwtAuthenticationToken token) {
+        var subject = Jwts.getSubject(token);
+        var createdColumn = columnService.createByBoardId(UUID.fromString(boardId), CreateColumnDto.fromRequest(payload), UUID.fromString(subject));
+
+        var model = new ColumnModelAssembler().toModel(createdColumn);
+        return ResponseEntity.created(model.getRequiredLink("self").toUri()).body(model);
     }
 
     @GetMapping("/{columnId}")

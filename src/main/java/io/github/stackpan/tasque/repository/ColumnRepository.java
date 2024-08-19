@@ -14,4 +14,6 @@ public interface ColumnRepository extends CrudRepository<BoardColumn, UUID> {
 
     Optional<BoardColumn> findByBoardAndId(Board board, UUID id);
 
+    BoardColumn findByBoardAndNextColumnIdIsNull(Board board);
+
 }
