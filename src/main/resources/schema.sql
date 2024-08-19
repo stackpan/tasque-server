@@ -72,15 +72,16 @@ create table boards
 
 create table columns
 (
-    id             uuid        not null primary key,
-    board_id       uuid        not null references boards (id),
-    name           varchar(64) not null,
-    description    varchar(128),
-    color_hex      varchar(7),
-    next_column_id uuid        not null references columns (id),
-    created_at     timestamp   not null,
-    updated_at     timestamp   not null,
-    check (color_hex ~ '^#[0-9a-f]{6}$')
+    id          uuid        not null primary key,
+    position    bigint      not null,
+    board_id    uuid        not null references boards (id),
+    name        varchar(64) not null,
+    description varchar(128),
+    color_hex   varchar(7),
+    created_at  timestamp   not null,
+    updated_at  timestamp   not null,
+    check (color_hex ~ '^#[0-9a-f]{6}$'),
+    constraint columns_position_board_id_uk unique (position, board_id)
 );
 
 create table cards

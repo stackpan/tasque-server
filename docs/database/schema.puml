@@ -70,7 +70,7 @@ entity boards {
 
 entity columns {
     * id : uuid
-    * position: unsigned bigint
+    * position: bigint
     * board_id : uuid
     * name : varchar(64)
     description : varchar(128)
