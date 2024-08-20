@@ -4,16 +4,13 @@ import io.github.stackpan.tasque.data.CreateColumnDto;
 import io.github.stackpan.tasque.data.UpdateColumnDto;
 import io.github.stackpan.tasque.entity.Board;
 import io.github.stackpan.tasque.entity.BoardColumn;
-import io.github.stackpan.tasque.repository.BoardRepository;
 import io.github.stackpan.tasque.repository.ColumnRepository;
 import io.github.stackpan.tasque.service.ColumnService;
 import io.github.stackpan.tasque.service.util.BoardServiceUtil;
 import io.github.stackpan.tasque.service.util.ColumnServiceUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +24,6 @@ public class ColumnServiceImpl implements ColumnService {
     private final BoardServiceUtil boardServiceUtil;
 
     private final ColumnServiceUtil columnServiceUtil;
-    private final BoardRepository boardRepository;
 
     @Override
     public List<BoardColumn> listByBoardId(UUID boardId, UUID userId) {
@@ -42,8 +38,7 @@ public class ColumnServiceImpl implements ColumnService {
         var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
         boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
 
-        return columnRepository.findByBoardAndId(board, columnId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return columnServiceUtil.findByIdOrThrowsNotFound(columnId);
     }
 
     @Override
