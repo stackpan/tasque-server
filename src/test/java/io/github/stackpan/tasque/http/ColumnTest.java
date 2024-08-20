@@ -373,6 +373,52 @@ public class ColumnTest {
                             jsonPath("$._embedded.payloadErrors.position").isArray()
                     );
         }
+
+        @Test
+        void byUnknownBoardIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(get("/api/boards/%s/columns".formatted("0a2b0b12-1559-41cf-a4bd-a44fa0957b86"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(get("/api/boards/%s/columns".formatted("7e885910-1df0-4744-8083-73e1d9769062"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
@@ -603,6 +649,78 @@ public class ColumnTest {
                             jsonPath("$._embedded.payloadErrors.colorHex").isArray(),
                             jsonPath("$._embedded.payloadErrors.position").isArray()
                     );
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Column 12",
+                        "position": 1,
+                        "description": "A long description of Updated Column 12",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, "855a4d8e-ae59-4850-8a4e-f7579e2517e7"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Column 12",
+                        "position": 1,
+                        "description": "A long description of Updated Column 12",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, "invaliduuid"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Column 12",
+                        "position": 1,
+                        "description": "A long description of Updated Column 12",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", "e6be59bb-4178-4869-bfb2-1d09bc5af558"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
         }
     }
 
