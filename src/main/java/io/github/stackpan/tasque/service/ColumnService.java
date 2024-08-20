@@ -16,4 +16,6 @@ public interface ColumnService {
     BoardColumn createByBoardId(UUID boardId, CreateColumnDto data, UUID userId);
 
     BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data, UUID userId);
+
+    void deleteByBoardIdAndId(UUID boardId, UUID columnId, UUID userId);
 }

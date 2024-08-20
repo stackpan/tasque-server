@@ -605,4 +605,64 @@ public class ColumnTest {
                     );
         }
     }
+
+    @Nested
+    class DeleteColumn {
+
+        @Test
+        void shouldNoContentAndMissingFromDatabase() throws Exception {
+            String columnId = "89143482-fdbc-47fa-9a60-fca63335521f";
+
+            mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, columnId))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNoContent());
+
+            var count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM columns WHERE id = ?", Integer.class, UUID.fromString(columnId));
+            assertEquals(count, 0);
+
+            var highestColumnPosition = jdbcTemplate.queryForObject("SELECT MAX(position) FROM columns WHERE columns.board_id = ?", Long.class, UUID.fromString(BOARD_ID));
+            assertEquals(1, highestColumnPosition);
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, "855a4d8e-ae59-4850-8a4e-f7579e2517e7"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, "invaliduuid"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", "e6be59bb-4178-4869-bfb2-1d09bc5af558"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
 }

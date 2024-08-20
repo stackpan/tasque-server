@@ -92,6 +92,18 @@ public class ColumnServiceImpl implements ColumnService {
         return columnRepository.save(column);
     }
 
+    @Override
+    @Transactional
+    public void deleteByBoardIdAndId(UUID boardId, UUID columnId, UUID userId) {
+        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
+        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+
+        var column = columnServiceUtil.findByIdOrThrowsNotFound(columnId);
+        columnRepository.delete(column);
+
+        columnRepository.unshiftColumnsByBoardFromStartingPosition(board, column.getPosition() + 1);
+    }
+
     private void swapColumnsByBoard(Board board, long originPosition, long destinationPosition) {
         var deltaPosition = destinationPosition - originPosition;
 

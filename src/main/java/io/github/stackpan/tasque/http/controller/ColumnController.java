@@ -78,4 +78,16 @@ public class ColumnController {
 
         return new ColumnModelAssembler().toModel(column);
     }
+
+    @DeleteMapping("/{columnId}")
+    public ResponseEntity<Void> deleteColumn(@PathVariable String boardId, @PathVariable String columnId, JwtAuthenticationToken token) {
+        var subject = Jwts.getSubject(token);
+        columnService.deleteByBoardIdAndId(
+                UUIDs.fromString(boardId),
+                UUIDs.fromString(columnId),
+                UUID.fromString(subject)
+        );
+
+        return ResponseEntity.noContent().build();
+    }
 }
