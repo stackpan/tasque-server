@@ -14,10 +14,6 @@ public interface ColumnRepository extends CrudRepository<BoardColumn, UUID> {
 
     List<BoardColumn> findAllByBoardOrderByPosition(Board board);
 
-    Optional<BoardColumn> findByBoardAndId(Board board, UUID id);
-
-    Long countByBoard(Board board);
-
     @Query("SELECT MAX(c.position) FROM Column c WHERE c.board = ?1")
     Optional<Long> maxPositionByBoard(Board board);
 
