@@ -25,6 +25,9 @@ public class BoardColumn implements Serializable {
     @Column(columnDefinition = "uuid")
     private UUID id;
 
+    @Column(nullable = false)
+    private Long position;
+
     @Column(length = 64, nullable = false)
     private String name;
 
@@ -45,9 +48,6 @@ public class BoardColumn implements Serializable {
     @ManyToOne
     @JoinColumn(name = "board_id")
     private Board board;
-
-    @Column(name = "next_column_id", columnDefinition = "uuid")
-    private UUID nextColumnId;
 
     @OneToMany(mappedBy = "column")
     private List<Card> cards = new ArrayList<>();

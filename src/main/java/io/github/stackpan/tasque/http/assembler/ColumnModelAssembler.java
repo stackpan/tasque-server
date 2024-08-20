@@ -15,17 +15,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ColumnModelAssembler implements RepresentationModelAssembler<BoardColumn, RepresentationModel<ColumnResource>> {
     @Override
     public RepresentationModel<ColumnResource> toModel(BoardColumn entity) {
-        var halModelBuilder = HalModelBuilder.halModelOf(ColumnResource.fromEntity(entity))
+        return HalModelBuilder.halModelOf(ColumnResource.fromEntity(entity))
                 .embed(entity.getCards().stream().map(card -> new CardModelAssembler().toModel(card)).toList(), LinkRelation.of("cards"))
                 .link(linkTo(methodOn(BoardController.class).listBoards(null)).withRel("boards"))
                 .link(linkTo(methodOn(BoardController.class).getBoard(entity.getBoard().getId().toString(), null)).withRel("board"))
                 .link(linkTo(methodOn(ColumnController.class).listColumns(entity.getBoard().getId().toString(), null)).withRel("columns"))
-                .link(linkTo(methodOn(ColumnController.class).getColumn(entity.getBoard().getId().toString(), entity.getId().toString(), null)).withSelfRel());
-
-        if (entity.getNextColumnId() != null) {
-            halModelBuilder.link(linkTo(methodOn(ColumnController.class).getColumn(entity.getBoard().getId().toString(), entity.getNextColumnId().toString(), null)).withRel("next"));
-        }
-
-        return halModelBuilder.build();
+                .link(linkTo(methodOn(ColumnController.class).getColumn(entity.getBoard().getId().toString(), entity.getId().toString(), null)).withSelfRel())
+                .build();
     }
 }

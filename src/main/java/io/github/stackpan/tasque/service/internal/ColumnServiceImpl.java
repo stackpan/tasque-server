@@ -27,7 +27,7 @@ public class ColumnServiceImpl implements ColumnService {
         var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
         boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
 
-        return columnRepository.findAllByBoard(board);
+        return columnRepository.findAllByBoardOrderByPosition(board);
     }
 
     @Override
@@ -51,11 +51,20 @@ public class ColumnServiceImpl implements ColumnService {
         newColumn.setDescription(data.description().orElse(null));
         newColumn.setColorHex(data.colorHex().orElse(null));
 
-        var latestOrderColumn = columnRepository.findByBoardAndNextColumnIdIsNull(board);
-        var createdColumn = columnRepository.save(newColumn);
-        latestOrderColumn.setNextColumnId(createdColumn.getId());
-        columnRepository.save(latestOrderColumn);
+        var position = columnRepository.maxPositionByBoard(board)
+                .map(highest -> data.position()
+                        .map(input -> {
+                            if (input > highest) {
+                                return highest + 1;
+                            }
+                            columnRepository.shiftColumnsByBoardFromStartingPosition(board, input);
+                            return input;
+                        })
+                        .orElse(highest + 1)
+                )
+                .orElse(0L);
 
-        return createdColumn;
+        newColumn.setPosition(position);
+        return columnRepository.save(newColumn);
     }
 }

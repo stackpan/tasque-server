@@ -9,14 +9,14 @@ public record CreateColumnDto(
         String name,
         Optional<String> description,
         Optional<String> colorHex,
-        Optional<UUID> nextColumnId
+        Optional<Long> position
 ) {
     public static CreateColumnDto fromRequest(CreateColumnRequest request) {
         return new CreateColumnDto(
                 request.name(),
                 request.description(),
                 request.colorHex(),
-                request.nextColumnId().map(UUID::fromString)
+                request.position()
         );
     }
 }

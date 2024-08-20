@@ -16,6 +16,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -63,6 +65,9 @@ public class ColumnTest {
                             jsonPath("$._embedded.columns[*].id").value(
                                     containsInAnyOrder("7ab312f3-2661-4de4-9755-42d194c253c2", "89143482-fdbc-47fa-9a60-fca63335521f", "f6968c9a-8fc3-4180-96be-a09809542339")
                             ),
+                            jsonPath("$._embedded.columns[*].position").value(
+                                    containsInRelativeOrder(0, 1, 2)
+                            ),
                             jsonPath("$._embedded.columns[*].name").value(
                                     containsInAnyOrder("Column 11", "Column 12", "Column 13")
                             ),
@@ -71,9 +76,6 @@ public class ColumnTest {
                             ),
                             jsonPath("$._embedded.columns[*].colorHex").value(
                                     containsInAnyOrder("#ffffff", "#ffffff", "#ffffff")
-                            ),
-                            jsonPath("$._embedded.columns[*].nextColumnId").value(
-                                    containsInRelativeOrder("89143482-fdbc-47fa-9a60-fca63335521f", "f6968c9a-8fc3-4180-96be-a09809542339", (String) null)
                             ),
                             jsonPath("$._embedded.columns[*].createdAt").value(
                                     containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z", "2024-07-28T00:00:02Z")
@@ -87,12 +89,6 @@ public class ColumnTest {
                             jsonPath("$._embedded.columns[*]._links.self.href").value(
                                     containsInAnyOrder(
                                             containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "7ab312f3-2661-4de4-9755-42d194c253c2")),
-                                            containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "89143482-fdbc-47fa-9a60-fca63335521f")),
-                                            containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "f6968c9a-8fc3-4180-96be-a09809542339"))
-                                    )
-                            ),
-                            jsonPath("$._embedded.columns[*]._links.next.href").value(
-                                    containsInRelativeOrder(
                                             containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "89143482-fdbc-47fa-9a60-fca63335521f")),
                                             containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "f6968c9a-8fc3-4180-96be-a09809542339"))
                                     )
@@ -140,7 +136,9 @@ public class ColumnTest {
     class PostColumn {
 
         @Test
-        void atLastIndexShouldCreatedAndReturnCreatedColumnAndStoredInDatabase() throws Exception {
+        void firstRecordShouldCreatedAndReturnCreatedColumnAndStoredInDatabase() throws Exception {
+            jdbcTemplate.update("DELETE FROM columns WHERE board_id = ?", UUID.fromString(BOARD_ID));
+
             var payload = """
                     {
                         "name": "Created Column",
@@ -163,48 +161,34 @@ public class ColumnTest {
                     .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID)))
                     .andExpectAll(
                             jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("$.position").value(0),
                             jsonPath("$.name").value(JsonPath.<String>read(payload, "$.name")),
                             jsonPath("$.description").value(JsonPath.<String>read(payload, "$.description")),
                             jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
-                            jsonPath("$.nextColumnId").isEmpty(),
                             jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
-                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID)),
-                            jsonPath("$._links.next").doesNotExist()
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID))
 //                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
                     )
                     .andDo(result -> {
                         var responseContent = result.getResponse().getContentAsString();
 
-                        var createdId = JsonPath.<String>read(responseContent, "$.id");
-                        var createdUuid = UUID.fromString(createdId);
-                        var count = jdbcTemplate.queryForObject("SELECT count(*) FROM columns WHERE id = ?", Integer.class, createdUuid);
-                        assertEquals(count, 1);
-
-                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
-                        var nextColumnIds = boardColumns.stream()
-                                .map(object -> object.get("next_column_id"))
-                                .toArray();
-                        UUID[] nextColumnIdExpectation = {
-                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
-                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
-                                createdUuid,
-                                null
-                        };
-                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                        String id = JsonPath.read(responseContent, "$.id");
+                        var count = jdbcTemplate.queryForObject("SELECT count(*) FROM columns WHERE id = ?", Integer.class, UUID.fromString(id));
+                        assertEquals(1, count);
                     });
         }
 
         @Test
-        void atMiddleIndex() throws Exception {
+        void atFirstIndexShouldShiftAllOfOtherColumns() throws Exception {
             var payload = """
                     {
                         "name": "Created Column",
                         "description": "Created Column description.",
                         "colorHex": "#ffffff",
-                        "nextColumnId": "f6968c9a-8fc3-4180-96be-a09809542339"
+                        "position": 0
                     }
                     """;
 
@@ -214,37 +198,37 @@ public class ColumnTest {
                                             .claim("scope", "ROLE_USER")
                                     )
                             )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
                     )
                     .andExpect(status().isCreated())
                     .andDo(result -> {
                         var responseContent = result.getResponse().getContentAsString();
 
-                        var createdId = JsonPath.<String>read(responseContent, "$.id");
-                        var createdUuid = UUID.fromString(createdId);
-
-                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
-                        var nextColumnIds = boardColumns.stream()
-                                .map(object -> object.get("next_column_id"))
-                                .toArray();
-                        UUID[] nextColumnIdExpectation = {
-                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
-                                createdUuid,
-                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
-                                null
+                        String id = JsonPath.read(responseContent, "$.id");
+                        String[] expectation = {
+                                id,
+                                "7ab312f3-2661-4de4-9755-42d194c253c2",
+                                "89143482-fdbc-47fa-9a60-fca63335521f",
+                                "f6968c9a-8fc3-4180-96be-a09809542339"
                         };
-                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                        var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                                .stream()
+                                .map(objectMap -> objectMap.get("id").toString())
+                                .toArray();
+                        assertArrayEquals(expectation, boardColumnMaps);
                     });
         }
 
         @Test
-        void atFirstIndex() throws Exception {
+        void atMiddleIndexShouldShiftOtherColumnsPartially() throws Exception {
             var payload = """
                     {
                         "name": "Created Column",
                         "description": "Created Column description.",
                         "colorHex": "#ffffff",
-                        "nextColumnId": "f6968c9a-8fc3-4180-96be-a09809542339"
+                        "position": 1
                     }
                     """;
 
@@ -254,22 +238,140 @@ public class ColumnTest {
                                             .claim("scope", "ROLE_USER")
                                     )
                             )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
                     )
                     .andExpect(status().isCreated())
                     .andDo(result -> {
-                        var boardColumns = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY created_at", UUID.fromString(BOARD_ID));
-                        var nextColumnIds = boardColumns.stream()
-                                .map(object -> object.get("next_column_id"))
-                                .toArray();
-                        UUID[] nextColumnIdExpectation = {
-                                UUID.fromString("7ab312f3-2661-4de4-9755-42d194c253c2"),
-                                UUID.fromString("89143482-fdbc-47fa-9a60-fca63335521f"),
-                                UUID.fromString("f6968c9a-8fc3-4180-96be-a09809542339"),
-                                null
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        String id = JsonPath.read(responseContent, "$.id");
+                        String[] expectation = {
+                                "7ab312f3-2661-4de4-9755-42d194c253c2",
+                                id,
+                                "89143482-fdbc-47fa-9a60-fca63335521f",
+                                "f6968c9a-8fc3-4180-96be-a09809542339"
                         };
-                        assertArrayEquals(nextColumnIdExpectation, nextColumnIds);
+                        var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                                .stream()
+                                .map(objectMap -> objectMap.get("id").toString())
+                                .toArray();
+                        assertArrayEquals(expectation, boardColumnMaps);
                     });
+        }
+
+        @Test
+        void noPositionKeyShouldBePlacedToLastIndex() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        String id = JsonPath.read(responseContent, "$.id");
+                        String[] expectation = {
+                                "7ab312f3-2661-4de4-9755-42d194c253c2",
+                                "89143482-fdbc-47fa-9a60-fca63335521f",
+                                "f6968c9a-8fc3-4180-96be-a09809542339",
+                                id
+                        };
+                        var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                                .stream()
+                                .map(objectMap -> objectMap.get("id").toString())
+                                .toArray();
+                        assertArrayEquals(expectation, boardColumnMaps);
+                    });
+        }
+
+        @Test
+        void withOverflowedPositionShouldBePreventedAndPlacedToLastIndex() throws Exception {
+            var payload = """
+                    {
+                        "name": "Created Column",
+                        "description": "Created Column description.",
+                        "colorHex": "#ffffff",
+                        "position": 100
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        String id = JsonPath.read(responseContent, "$.id");
+                        String[] expectation = {
+                                "7ab312f3-2661-4de4-9755-42d194c253c2",
+                                "89143482-fdbc-47fa-9a60-fca63335521f",
+                                "f6968c9a-8fc3-4180-96be-a09809542339",
+                                id
+                        };
+                        var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                                .stream()
+                                .map(objectMap -> objectMap.get("id").toString())
+                                .toArray();
+                        assertArrayEquals(expectation, boardColumnMaps);
+
+                        Integer position = JsonPath.read(responseContent, "$.position");
+                        assertEquals(3, position);
+                    });
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "name": 999,
+                        "colorHex": "#fnffff",
+                        "position": -1
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist(),
+                            jsonPath("$._embedded.payloadErrors.colorHex").isArray(),
+                            jsonPath("$._embedded.payloadErrors.position").isArray()
+                    );
         }
     }
 
@@ -291,16 +393,15 @@ public class ColumnTest {
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
                     .andExpectAll(
                             jsonPath("$.id").value(targetId),
+                            jsonPath("$.position").value(0),
                             jsonPath("$.name").value("Column 11"),
                             jsonPath("$.description").value("A long description of Column 11"),
                             jsonPath("$.colorHex").value("#ffffff"),
-                            jsonPath("$.nextColumnId").value("89143482-fdbc-47fa-9a60-fca63335521f"),
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
                             jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, targetId))),
-                            jsonPath("$._links.next.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "89143482-fdbc-47fa-9a60-fca63335521f"))),
 //                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
                             jsonPath("$._embedded.cards").isArray()
                     );

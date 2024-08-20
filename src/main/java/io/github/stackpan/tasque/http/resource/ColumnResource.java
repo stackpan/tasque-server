@@ -17,13 +17,13 @@ public class ColumnResource extends RepresentationModel<ColumnResource> {
 
     UUID id;
 
+    Long position;
+
     String name;
 
     String description;
 
     String colorHex;
-
-    UUID nextColumnId;
 
     OffsetDateTime createdAt;
 
@@ -32,10 +32,10 @@ public class ColumnResource extends RepresentationModel<ColumnResource> {
     public static ColumnResource fromEntity(BoardColumn entity) {
         return new ColumnResource(
                 entity.getId(),
+                entity.getPosition(),
                 entity.getName(),
                 entity.getDescription(),
                 entity.getColorHex(),
-                entity.getNextColumnId(),
                 entity.getCreatedAt().atOffset(ZoneOffset.UTC),
                 entity.getUpdatedAt().atOffset(ZoneOffset.UTC)
         );
