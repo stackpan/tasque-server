@@ -80,8 +80,7 @@ create table columns
     color_hex   varchar(7),
     created_at  timestamp   not null,
     updated_at  timestamp   not null,
-    check (color_hex ~ '^#[0-9a-f]{6}$'),
-    constraint columns_position_board_id_uk unique (position, board_id)
+    check (color_hex ~ '^#[0-9a-f]{6}$')
 );
 
 create table cards
