@@ -16,12 +16,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -441,6 +441,168 @@ public class ColumnTest {
                             )
                     )
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    class UpdateColumn {
+
+        private final String COLUMN_ID = "89143482-fdbc-47fa-9a60-fca63335521f";
+
+        @Test
+        void shouldReturnUpdatedColumnAndChangedOnDatabase() throws Exception {
+            var oldColumnMap = jdbcTemplate.queryForMap("SELECT * FROM columns WHERE columns.id = ?", UUID.fromString(COLUMN_ID));
+
+            var payload = """
+                    {
+                        "name": "Updated Column 12",
+                        "position": 1,
+                        "description": "A long description of Updated Column 12",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.id").value(COLUMN_ID),
+                            jsonPath("$.position").value(JsonPath.<Integer>read(payload, "$.position")),
+                            jsonPath("$.name").value(JsonPath.<String>read(payload, "$.name")),
+                            jsonPath("$.description").value(JsonPath.<String>read(payload, "$.description")),
+                            jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID))
+//                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
+                    );
+
+            var updatedColumnMap = jdbcTemplate.queryForMap("SELECT * FROM columns WHERE columns.id = ?", UUID.fromString(COLUMN_ID));
+
+            long expectationPosition = ((Integer) JsonPath.read(payload, "$.position")).longValue();
+            long actualPosition = (Long) updatedColumnMap.get("position");
+            assertEquals(expectationPosition, actualPosition);
+
+            assertEquals(JsonPath.<String>read(payload, "$.name"), updatedColumnMap.get("name"));
+
+            assertEquals(JsonPath.<String>read(payload, "$.description"), updatedColumnMap.get("description"));
+
+            assertEquals(JsonPath.<String>read(payload, "$.colorHex"), updatedColumnMap.get("color_hex"));
+
+            var oldBoardUpdatedAt = ((Timestamp) oldColumnMap.get("updated_at")).toInstant();
+            var updatedBoardUpdatedAt = ((Timestamp) updatedColumnMap.get("updated_at")).toInstant();
+            assertTrue(updatedBoardUpdatedAt.isAfter(oldBoardUpdatedAt));
+        }
+
+        @Test
+        void movePositionToLeft() throws Exception {
+            var payload = """
+                    {
+                        "name": "Column 12",
+                        "position": 0,
+                        "description": "A long description of Column 12",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk());
+
+            String[] expectation = {
+                    COLUMN_ID,
+                    "7ab312f3-2661-4de4-9755-42d194c253c2",
+                    "f6968c9a-8fc3-4180-96be-a09809542339"
+            };
+            var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                    .stream()
+                    .map(objectMap -> objectMap.get("id").toString())
+                    .toArray();
+            assertArrayEquals(expectation, boardColumnMaps);
+        }
+
+        @Test
+        void movePositionToRight() throws Exception {
+            var payload = """
+                    {
+                        "name": "Column 12",
+                        "position": 2,
+                        "description": "A long description of Column 12",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk());
+
+            String[] expectation = {
+                    "7ab312f3-2661-4de4-9755-42d194c253c2",
+                    "f6968c9a-8fc3-4180-96be-a09809542339",
+                    COLUMN_ID
+            };
+            var boardColumnMaps = jdbcTemplate.queryForList("SELECT * FROM columns WHERE board_id = ? ORDER BY position", UUID.fromString(BOARD_ID))
+                    .stream()
+                    .map(objectMap -> objectMap.get("id").toString())
+                    .toArray();
+            assertArrayEquals(expectation, boardColumnMaps);
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "name": 999,
+                        "colorHex": "#fnffff"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist(),
+                            jsonPath("$._embedded.payloadErrors.colorHex").isArray(),
+                            jsonPath("$._embedded.payloadErrors.position").isArray()
+                    );
         }
     }
 }

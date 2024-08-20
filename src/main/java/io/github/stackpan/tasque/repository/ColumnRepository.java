@@ -25,4 +25,12 @@ public interface ColumnRepository extends CrudRepository<BoardColumn, UUID> {
     @Query("UPDATE Column c SET c.position = c.position + 1 WHERE c.board = ?1 AND c.position >= ?2")
     void shiftColumnsByBoardFromStartingPosition(Board board, Long position);
 
+    @Modifying
+    @Query("UPDATE Column c SET c.position = c.position + 1 WHERE c.board = ?1 AND c.position >= ?2 AND c.position <= ?3")
+    void shiftColumnsByBoardAndRangedPosition(Board board, Long startPosition, Long endPosition);
+
+    @Modifying
+    @Query("UPDATE Column c SET c.position = c.position - 1 WHERE c.board = ?1 AND c.position >= ?2 AND c.position <= ?3")
+    void unshiftColumnsByBoardAndRangedPosition(Board board, Long startPosition, Long endPosition);
+
 }

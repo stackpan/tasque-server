@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service;
 
 import io.github.stackpan.tasque.data.CreateColumnDto;
+import io.github.stackpan.tasque.data.UpdateColumnDto;
 import io.github.stackpan.tasque.entity.BoardColumn;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface ColumnService {
 
     BoardColumn createByBoardId(UUID boardId, CreateColumnDto data, UUID userId);
 
+    BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data, UUID userId);
 }

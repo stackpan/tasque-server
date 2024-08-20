@@ -1,8 +1,10 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.CreateColumnDto;
+import io.github.stackpan.tasque.data.UpdateColumnDto;
 import io.github.stackpan.tasque.http.assembler.ColumnModelAssembler;
 import io.github.stackpan.tasque.http.request.CreateColumnRequest;
+import io.github.stackpan.tasque.http.request.UpdateColumnRequest;
 import io.github.stackpan.tasque.http.resource.ColumnResource;
 import io.github.stackpan.tasque.service.ColumnService;
 import io.github.stackpan.tasque.util.Jwts;
@@ -58,6 +60,19 @@ public class ColumnController {
         var column = columnService.getByBoardIdAndId(
                 UUIDs.fromString(boardId),
                 UUIDs.fromString(columnId),
+                UUID.fromString(subject)
+        );
+
+        return new ColumnModelAssembler().toModel(column);
+    }
+
+    @PutMapping("/{columnId}")
+    public RepresentationModel<ColumnResource> updateColumn(@PathVariable String boardId, @PathVariable String columnId, @RequestBody @Valid UpdateColumnRequest payload, JwtAuthenticationToken token) {
+        var subject = Jwts.getSubject(token);
+        var column = columnService.updateByBoardIdAndId(
+                UUIDs.fromString(boardId),
+                UUIDs.fromString(columnId),
+                UpdateColumnDto.fromRequest(payload),
                 UUID.fromString(subject)
         );
 
