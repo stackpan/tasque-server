@@ -78,7 +78,6 @@ entity columns {
     * created_at : timestamp
     * updated_at : timestamp
     --
-    unique(position, board_id)
 }
 
 entity cards {
