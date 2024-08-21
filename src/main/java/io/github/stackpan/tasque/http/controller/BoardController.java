@@ -8,7 +8,6 @@ import io.github.stackpan.tasque.http.request.UpdateBoardRequest;
 import io.github.stackpan.tasque.http.resource.BoardResource;
 import io.github.stackpan.tasque.service.BoardService;
 import io.github.stackpan.tasque.util.Jwts;
-import io.github.stackpan.tasque.util.UUIDs;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
@@ -53,25 +52,25 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}")
-    public RepresentationModel<BoardResource> getBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
+    public RepresentationModel<BoardResource> getBoard(@PathVariable UUID boardId, JwtAuthenticationToken token) {
         var subject = Jwts.getSubject(token);
-        var board = boardService.getAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
+        var board = boardService.getAsUser(boardId, UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(board);
     }
 
     @PutMapping("/{boardId}")
-    public RepresentationModel<BoardResource> updateBoard(@PathVariable String boardId, @RequestBody @Valid UpdateBoardRequest board, JwtAuthenticationToken token) {
+    public RepresentationModel<BoardResource> updateBoard(@PathVariable UUID boardId, @RequestBody @Valid UpdateBoardRequest board, JwtAuthenticationToken token) {
         var subject = Jwts.getSubject(token);
-        var updatedBoard = boardService.updateByIdAsUser(UUIDs.fromString(boardId), UpdateBoardDto.fromRequest(board), UUID.fromString(subject));
+        var updatedBoard = boardService.updateByIdAsUser(boardId, UpdateBoardDto.fromRequest(board), UUID.fromString(subject));
 
         return new BoardModelAssembler().toModel(updatedBoard);
     }
 
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable String boardId, JwtAuthenticationToken token) {
+    public ResponseEntity<Void> deleteBoard(@PathVariable UUID boardId, JwtAuthenticationToken token) {
         var subject = Jwts.getSubject(token);
-        boardService.deleteByIdAsUser(UUIDs.fromString(boardId), UUID.fromString(subject));
+        boardService.deleteByIdAsUser(boardId, UUID.fromString(subject));
 
         return ResponseEntity.noContent().build();
     }

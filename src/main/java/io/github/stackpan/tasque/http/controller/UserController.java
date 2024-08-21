@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable String userId) {
+    public User getUser(@PathVariable UUID userId) {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 

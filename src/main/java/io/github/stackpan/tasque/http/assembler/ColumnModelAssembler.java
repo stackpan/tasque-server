@@ -18,9 +18,9 @@ public class ColumnModelAssembler implements RepresentationModelAssembler<BoardC
         return HalModelBuilder.halModelOf(ColumnResource.fromEntity(entity))
                 .embed(entity.getCards().stream().map(card -> new CardModelAssembler().toModel(card)).toList(), LinkRelation.of("cards"))
                 .link(linkTo(methodOn(BoardController.class).listBoards(null)).withRel("boards"))
-                .link(linkTo(methodOn(BoardController.class).getBoard(entity.getBoard().getId().toString(), null)).withRel("board"))
-                .link(linkTo(methodOn(ColumnController.class).listColumns(entity.getBoard().getId().toString(), null)).withRel("columns"))
-                .link(linkTo(methodOn(ColumnController.class).getColumn(entity.getBoard().getId().toString(), entity.getId().toString(), null)).withSelfRel())
+                .link(linkTo(methodOn(BoardController.class).getBoard(entity.getBoard().getId(), null)).withRel("board"))
+                .link(linkTo(methodOn(ColumnController.class).listColumns(entity.getBoard().getId(), null)).withRel("columns"))
+                .link(linkTo(methodOn(ColumnController.class).getColumn(entity.getBoard().getId(), entity.getId(), null)).withSelfRel())
                 .build();
     }
 }
