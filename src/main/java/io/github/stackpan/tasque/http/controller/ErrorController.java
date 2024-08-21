@@ -11,12 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,12 +46,8 @@ public class ErrorController extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         if (ex instanceof MethodArgumentTypeMismatchException subEx) {
             if (subEx.getParameter().getParameterType() == UUID.class) {
-                if (request instanceof ServletWebRequest servletWebRequest) {
-                    var httpMethod = servletWebRequest.getHttpMethod();
-                    var resourcePath = servletWebRequest.getRequest().getRequestURI();
-                    var e = new NoResourceFoundException(httpMethod, resourcePath);
-                    return super.handleNoResourceFoundException(e, headers, HttpStatus.NOT_FOUND, request);
-                }
+                var e = new ResponseStatusException(HttpStatus.NOT_FOUND);
+                return super.handleErrorResponseException(e, e.getHeaders(), e.getStatusCode(), request);
             }
         }
 

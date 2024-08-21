@@ -29,18 +29,4 @@ public class BoardServiceUtil {
         return boardRepository.findByIdAndOwner(boardId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
-
-    public Board findByIdOrThrowsNotFound(UUID boardId) {
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    }
-
-    public void authorizeOrThrowsNotFound(Board board, UUID userId) {
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        if (!board.getOwner().equals(user))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-    }
-
 }

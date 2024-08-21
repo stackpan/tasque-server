@@ -68,6 +68,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Transactional
     public void deleteById(UUID boardId) {
         var board = boardServiceUtil.authorizedFindById(boardId);
 
