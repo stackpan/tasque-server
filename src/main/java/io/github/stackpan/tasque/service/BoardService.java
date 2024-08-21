@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface BoardService {
 
-    List<Board> listAsUser(UUID userId);
+    List<Board> list();
 
-    Board createAsUser(CreateBoardDto data, UUID userId);
+    Board create(CreateBoardDto data);
 
-    Board getAsUser(UUID boardId, UUID userId);
+    Board getById(UUID boardId);
 
-    Board updateByIdAsUser(UUID boardId, UpdateBoardDto data, UUID userId);
+    Board updateById(UUID boardId, UpdateBoardDto data);
 
-    void deleteByIdAsUser(UUID boardId, UUID userId);
+    void deleteById(UUID boardId);
 }

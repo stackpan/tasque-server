@@ -16,7 +16,7 @@ public class AuthModelAssembler implements RepresentationModelAssembler<User, En
     public EntityModel<UserResource> toModel(User entity) {
         return EntityModel.of(
                 UserResource.fromEntity(entity),
-                linkTo(methodOn(AuthController.class).me(null)).withSelfRel(),
+                linkTo(methodOn(AuthController.class).me()).withSelfRel(),
                 linkTo(methodOn(AuthController.class).upload()).withRel("upload"),
                 linkTo(methodOn(AuthController.class).changePassword()).withRel("changePassword"),
                 linkTo(methodOn(UserController.class).getUser(entity.getId())).withRel("user")

@@ -7,16 +7,12 @@ import io.github.stackpan.tasque.http.resource.AuthResource;
 import io.github.stackpan.tasque.http.resource.UserResource;
 import io.github.stackpan.tasque.service.AuthService;
 import io.github.stackpan.tasque.service.UserService;
-import io.github.stackpan.tasque.util.Jwts;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -35,13 +31,12 @@ public class AuthController {
         var jwt = authService.login(AuthLoginDto.fromRequest(request));
         var resource = AuthResource.fromJwt(jwt);
 
-        return EntityModel.of(resource, linkTo(methodOn(AuthController.class).me(null)).withRel("me"));
+        return EntityModel.of(resource, linkTo(methodOn(AuthController.class).me()).withRel("me"));
     }
 
     @GetMapping("/me")
-    public EntityModel<UserResource> me(JwtAuthenticationToken token) {
-        var subject = Jwts.getSubject(token);
-        var user = userService.getById(UUID.fromString(subject));
+    public EntityModel<UserResource> me() {
+        var user = userService.getMe();
 
         return new AuthModelAssembler().toModel(user);
     }

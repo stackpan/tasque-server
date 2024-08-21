@@ -26,26 +26,23 @@ public class ColumnServiceImpl implements ColumnService {
     private final ColumnServiceUtil columnServiceUtil;
 
     @Override
-    public List<BoardColumn> listByBoardId(UUID boardId, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public List<BoardColumn> listByBoardId(UUID boardId) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         return columnRepository.findAllByBoardOrderByPosition(board);
     }
 
     @Override
-    public BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         return columnServiceUtil.findByIdOrThrowsNotFound(columnId);
     }
 
     @Override
     @Transactional
-    public BoardColumn createByBoardId(UUID boardId, CreateColumnDto data, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public BoardColumn createByBoardId(UUID boardId, CreateColumnDto data) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         var newColumn = new BoardColumn();
         newColumn.setBoard(board);
@@ -72,9 +69,8 @@ public class ColumnServiceImpl implements ColumnService {
 
     @Override
     @Transactional
-    public BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         var column = columnServiceUtil.findByIdOrThrowsNotFound(columnId);
         column.setName(data.name());
@@ -89,9 +85,8 @@ public class ColumnServiceImpl implements ColumnService {
 
     @Override
     @Transactional
-    public void deleteByBoardIdAndId(UUID boardId, UUID columnId, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public void deleteByBoardIdAndId(UUID boardId, UUID columnId) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         var column = columnServiceUtil.findByIdOrThrowsNotFound(columnId);
         columnRepository.delete(column);

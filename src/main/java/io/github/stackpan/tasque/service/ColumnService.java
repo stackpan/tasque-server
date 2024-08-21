@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface ColumnService {
 
-    List<BoardColumn> listByBoardId(UUID boardId, UUID userId);
+    List<BoardColumn> listByBoardId(UUID boardId);
 
-    BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId, UUID userId);
+    BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId);
 
-    BoardColumn createByBoardId(UUID boardId, CreateColumnDto data, UUID userId);
+    BoardColumn createByBoardId(UUID boardId, CreateColumnDto data);
 
-    BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data, UUID userId);
+    BoardColumn updateByBoardIdAndId(UUID boardId, UUID columnId, UpdateColumnDto data);
 
-    void deleteByBoardIdAndId(UUID boardId, UUID columnId, UUID userId);
+    void deleteByBoardIdAndId(UUID boardId, UUID columnId);
 }

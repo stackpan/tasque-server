@@ -5,6 +5,7 @@ import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.entity.Board;
 import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.repository.BoardRepository;
+import io.github.stackpan.tasque.security.AuthToken;
 import io.github.stackpan.tasque.service.BoardService;
 import io.github.stackpan.tasque.service.util.BoardServiceUtil;
 import io.github.stackpan.tasque.service.util.UserServiceUtil;
@@ -25,41 +26,39 @@ public class BoardServiceImpl implements BoardService {
 
     private final UserServiceUtil userServiceUtil;
 
+    private final AuthToken authToken;
+
     @Override
-    public List<Board> listAsUser(UUID userId) {
+    public List<Board> list() {
         var user = new User();
-        user.setId(userId);
+        user.setId(authToken.getCurrentSubject());
 
         return boardRepository.findAllByOwner(user);
     }
 
     @Override
     @Transactional
-    public Board createAsUser(CreateBoardDto data, UUID userId) {
+    public Board create(CreateBoardDto data) {
         var newBoard = new Board();
         newBoard.setName(data.name());
         newBoard.setDescription(data.description().orElse(null));
         newBoard.setColorHex(data.colorHex().orElse(null));
 
-        var user = userServiceUtil.findByIdOrThrowsUnauthorized(userId);
+        var user = userServiceUtil.findByIdOrThrowsUnauthorized(authToken.getCurrentSubject());
         newBoard.setOwner(user);
 
         return boardRepository.save(newBoard);
     }
 
     @Override
-    public Board getAsUser(UUID boardId, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
-
-        return board;
+    public Board getById(UUID boardId) {
+        return boardServiceUtil.authorizedFindById(boardId);
     }
 
     @Override
     @Transactional
-    public Board updateByIdAsUser(UUID boardId, UpdateBoardDto data, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public Board updateById(UUID boardId, UpdateBoardDto data) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         board.setName(data.name());
         board.setDescription(data.description().orElse(null));
@@ -69,9 +68,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void deleteByIdAsUser(UUID boardId, UUID userId) {
-        var board = boardServiceUtil.findByIdOrThrowsNotFound(boardId);
-        boardServiceUtil.authorizeOrThrowsNotFound(board, userId);
+    public void deleteById(UUID boardId) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
 
         boardRepository.delete(board);
     }
