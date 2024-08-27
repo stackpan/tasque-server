@@ -47,6 +47,81 @@ public class CardTest {
     private final String COLUMN_ID = "7ab312f3-2661-4de4-9755-42d194c253c2";
 
     @Nested
+    class ListCardInAColumn {
+
+        @Test
+        void shouldReturnListOfCard() throws Exception {
+            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$._embedded.cards.length()").value(2),
+                            jsonPath("$._embedded.cards[*].id").value(
+                                    containsInAnyOrder("d8355640-cf9c-45ec-a1ee-398157f5a544", "a6d37ebb-6b9f-4c1c-be74-2a1485178ba8")
+                            ),
+                            jsonPath("$._embedded.cards[*].body").value(
+                                    containsInAnyOrder("Card 111", "Card 112")
+                            ),
+                            jsonPath("$._embedded.cards[*].colorHex").value(
+                                    containsInAnyOrder("#ffffff", "#ffffff")
+                            ),
+                            jsonPath("$._embedded.cards[*].createdAt").value(
+                                    containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z")
+                            ),
+                            jsonPath("$._embedded.cards[*].updatedAt").value(
+                                    containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z")
+                            ),
+                            jsonPath("$._embedded.cards[*]._links.boards.href", everyItem(containsString("/api/boards"))),
+                            jsonPath("$._embedded.cards[*]._links.board.href", everyItem(containsString("/api/boards/%s".formatted(BOARD_ID)))),
+                            jsonPath("$._embedded.cards[*]._links.columns.href", everyItem(containsString("/api/boards/%s/columns".formatted(BOARD_ID)))),
+                            jsonPath("$._embedded.cards[*]._links.column.href", everyItem(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID)))),
+                            jsonPath("$._embedded.cards[*]._links.cards.href", everyItem(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID)))),
+                            jsonPath("$._embedded.cards[*]._links.self.href").value(
+                                    containsInAnyOrder(
+                                            containsString("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, "d8355640-cf9c-45ec-a1ee-398157f5a544")),
+                                            containsString("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, "a6d37ebb-6b9f-4c1c-be74-2a1485178ba8"))
+                                    )
+                            ),
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
+                            jsonPath("$._links.columns.href").value(containsString("/api/boards/%s/columns".formatted(BOARD_ID))),
+                            jsonPath("$._links.column.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID)))
+                    );
+        }
+
+        @Test
+        void byUnknownParentIdsShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("684fc4c1-0d7f-4b7e-b468-6e7f045adcf1", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("7e885910-1df0-4744-8083-73e1d9769062", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
     class GetCard {
 
         @Test
@@ -72,6 +147,7 @@ public class CardTest {
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
                             jsonPath("$._links.columns.href").value(containsString("/api/boards/%s/columns".formatted(BOARD_ID))),
                             jsonPath("$._links.column.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))),
                             jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, targetId)))
                     );
         }

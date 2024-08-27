@@ -4,6 +4,7 @@ import io.github.stackpan.tasque.http.assembler.CardModelAssembler;
 import io.github.stackpan.tasque.http.resource.CardResource;
 import io.github.stackpan.tasque.service.CardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,12 +13,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/api/boards/{boardId}/columns/{columnId}/cards")
 @RequiredArgsConstructor
 public class CardController {
 
     private final CardService cardService;
+
+    @GetMapping
+    public CollectionModel<RepresentationModel<CardResource>> listCards(@PathVariable UUID boardId, @PathVariable UUID columnId) {
+        var columns = cardService.listByBoardIdAndColumnId(boardId, columnId)
+                .stream()
+                .map(card -> new CardModelAssembler().toModel(card))
+                .toList();
+
+        return CollectionModel.of(
+                columns,
+                linkTo(methodOn(BoardController.class).listBoards()).withRel("boards"),
+                linkTo(methodOn(BoardController.class).getBoard(boardId)).withRel("board"),
+                linkTo(methodOn(ColumnController.class).listColumns(boardId)).withRel("columns"),
+                linkTo(methodOn(ColumnController.class).getColumn(boardId, columnId)).withRel("column"),
+                linkTo(methodOn(CardController.class).listCards(boardId, columnId)).withSelfRel()
+        );
+    }
 
     @GetMapping("/{cardId}")
     public RepresentationModel<CardResource> getCard(@PathVariable UUID boardId, @PathVariable UUID columnId, @PathVariable UUID cardId) {
