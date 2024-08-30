@@ -1,7 +1,9 @@
 package io.github.stackpan.tasque.http;
 
+import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
 import io.github.stackpan.tasque.util.ExtMediaType;
+import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -116,6 +121,125 @@ public class CardTest {
                                             .claim("scope", "ROLE_USER")
                                     )
                             )
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    class CreateCard {
+
+        @Test
+        void shouldReturnCreatedCardAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                        "body": "Created Card Test",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, Regexps.UUID))))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("$.body").value(JsonPath.<String>read(payload, "$.body")),
+                            jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
+                            jsonPath("$._links.columns.href").value(containsString("/api/boards/%s/columns".formatted(BOARD_ID))),
+                            jsonPath("$._links.column.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, Regexps.UUID)))
+                    ).andDo(result -> {
+                        var responseBody = result.getResponse().getContentAsString();
+
+                        var createdId = UUID.fromString(JsonPath.read(responseBody, "$.id"));
+                        var count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM cards WHERE id = ?", Integer.class, createdId);
+
+                        assertEquals(1, count);
+                    });
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "body": 9000
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.body").isArray(),
+                            jsonPath("$._embedded.payloadErrors.colorHex").doesNotExist()
+                    );
+        }
+
+        @Test
+        void byUnknownParentIdsShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "body": "Created Card Test",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("684fc4c1-0d7f-4b7e-b468-6e7f045adcf1", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "body": "Created Card Test",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("7e885910-1df0-4744-8083-73e1d9769062", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
                     )
                     .andExpect(status().isNotFound());
         }

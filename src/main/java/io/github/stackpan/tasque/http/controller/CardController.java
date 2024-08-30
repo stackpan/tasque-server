@@ -1,15 +1,16 @@
 package io.github.stackpan.tasque.http.controller;
 
+import io.github.stackpan.tasque.data.CreateCardDto;
 import io.github.stackpan.tasque.http.assembler.CardModelAssembler;
+import io.github.stackpan.tasque.http.request.CreateCardRequest;
 import io.github.stackpan.tasque.http.resource.CardResource;
 import io.github.stackpan.tasque.service.CardService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -38,6 +39,14 @@ public class CardController {
                 linkTo(methodOn(ColumnController.class).getColumn(boardId, columnId)).withRel("column"),
                 linkTo(methodOn(CardController.class).listCards(boardId, columnId)).withSelfRel()
         );
+    }
+
+    @PostMapping
+    public ResponseEntity<RepresentationModel<CardResource>> createCard(@PathVariable UUID boardId, @PathVariable UUID columnId, @RequestBody @Valid CreateCardRequest card) {
+        var createdCard = cardService.createByBoardIdAndColumnId(boardId, columnId, CreateCardDto.fromRequest(card));
+
+        var resource = new CardModelAssembler().toModel(createdCard);
+        return ResponseEntity.created(resource.getRequiredLink("self").toUri()).body(resource);
     }
 
     @GetMapping("/{cardId}")

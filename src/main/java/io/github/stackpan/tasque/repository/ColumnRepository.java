@@ -17,6 +17,8 @@ public interface ColumnRepository extends CrudRepository<BoardColumn, UUID> {
     @Query("SELECT MAX(c.position) FROM Column c WHERE c.board = ?1")
     Optional<Long> maxPositionByBoard(Board board);
 
+    Optional<BoardColumn> findByBoardAndId(Board board, UUID id);
+
     @Modifying
     @Query("UPDATE Column c SET c.position = c.position + 1 WHERE c.board = ?1 AND c.position >= ?2")
     void shiftColumnsByBoardFromStartingPosition(Board board, Long position);
