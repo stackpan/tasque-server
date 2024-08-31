@@ -64,4 +64,11 @@ public class CardController {
 
         return new CardModelAssembler().toModel(updatedCard);
     }
+
+    @DeleteMapping("/{cardId}")
+    public ResponseEntity<Void> deleteCard(@PathVariable UUID boardId, @PathVariable UUID columnId, @PathVariable UUID cardId) {
+        cardService.deleteByBoardIdAndColumnIdAndId(boardId, columnId, cardId);
+
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -76,4 +76,17 @@ public class CardServiceImpl implements CardService {
 
         return cardRepository.save(card);
     }
+
+    @Override
+    @Transactional
+    public void deleteByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId) {
+        var board = boardServiceUtil.authorizedFindById(boardId);
+
+        var column = new BoardColumn();
+        column.setId(columnId);
+
+        var card = cardRepository.findByIdentities(board, column, cardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        cardRepository.delete(card);
+    }
 }

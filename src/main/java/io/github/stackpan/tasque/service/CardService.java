@@ -16,4 +16,6 @@ public interface CardService {
     Card getByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId);
 
     Card updateByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId, UpdateCardDto data);
+
+    void deleteByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId);
 }
