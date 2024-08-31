@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service;
 
 import io.github.stackpan.tasque.data.CreateCardDto;
+import io.github.stackpan.tasque.data.UpdateCardDto;
 import io.github.stackpan.tasque.entity.Card;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface CardService {
     Card createByBoardIdAndColumnId(UUID boardId, UUID columnId, CreateCardDto data);
 
     Card getByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId);
+
+    Card updateByBoardIdAndColumnIdAndId(UUID boardId, UUID columnId, UUID cardId, UpdateCardDto data);
 }

@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -313,4 +314,149 @@ public class CardTest {
         }
     }
 
+    @Nested
+    class UpdateCard {
+
+        private final String CARD_ID = "d8355640-cf9c-45ec-a1ee-398157f5a544";
+
+        @Test
+        void shouldReturnUpdatedCardAndChangedInDatabase() throws Exception {
+            var oldCard = jdbcTemplate.queryForMap("SELECT * FROM cards WHERE id = ?", UUID.fromString(CARD_ID));
+
+            var payload = """
+                    {
+                        "body": "Updated Card",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, CARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.id").value(CARD_ID),
+                            jsonPath("$.body").value(JsonPath.<String>read(payload, "$.body")),
+                            jsonPath("$.colorHex").value(JsonPath.<String>read(payload, "$.colorHex")),
+                            jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.boards.href").value(containsString("/api/boards")),
+                            jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
+                            jsonPath("$._links.columns.href").value(containsString("/api/boards/%s/columns".formatted(BOARD_ID))),
+                            jsonPath("$._links.column.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, CARD_ID)))
+                    );
+
+            var updatedCard = jdbcTemplate.queryForMap("SELECT * FROM cards WHERE id = ?", UUID.fromString(CARD_ID));
+
+            assertEquals(updatedCard.get("body"), JsonPath.<String>read(payload, "$.body"));
+            assertEquals(updatedCard.get("color_hex"), JsonPath.<String>read(payload, "$.colorHex"));
+
+            var oldUpdatedAt = ((Timestamp) oldCard.get("updated_at")).toInstant();
+            var updatedUpdatedAt = ((Timestamp) updatedCard.get("updated_at")).toInstant();
+            assertTrue(updatedUpdatedAt.isAfter(oldUpdatedAt));
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "body": 9000
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, CARD_ID))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.body").isArray(),
+                            jsonPath("$._embedded.payloadErrors.colorHex").doesNotExist()
+                    );
+        }
+
+        @Test
+        void withInvalidUuidShouldReturnNotFound() throws Exception {
+            var payload = """
+                    {
+                        "body": "Updated Card"
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, "invaliduuid"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void withUnknownIdShouldReturnNotFound() throws Exception {
+            var payload = """
+                    {
+                        "body": "Updated Card",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s/cards/%s".formatted(BOARD_ID, COLUMN_ID, "97f21e9e-09bc-4aa2-a929-49387fcde4e1"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void withUnownedBoardShouldReturnNotFound() throws Exception {
+            var payload = """
+                    {
+                        "body": "Updated Card",
+                        "colorHex": "#000000"
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/%s/columns/%s/cards/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", COLUMN_ID, "97f21e9e-09bc-4aa2-a929-49387fcde4e1"))
+                            .with(jwt().jwt(jwt -> jwt
+                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
+                                            .claim("scope", "ROLE_USER")
+                                    )
+                            )
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
 }

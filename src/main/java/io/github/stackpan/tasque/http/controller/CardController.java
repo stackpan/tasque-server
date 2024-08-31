@@ -1,8 +1,10 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.CreateCardDto;
+import io.github.stackpan.tasque.data.UpdateCardDto;
 import io.github.stackpan.tasque.http.assembler.CardModelAssembler;
 import io.github.stackpan.tasque.http.request.CreateCardRequest;
+import io.github.stackpan.tasque.http.request.UpdateCardRequest;
 import io.github.stackpan.tasque.http.resource.CardResource;
 import io.github.stackpan.tasque.service.CardService;
 import jakarta.validation.Valid;
@@ -54,5 +56,12 @@ public class CardController {
         var card = cardService.getByBoardIdAndColumnIdAndId(boardId, columnId, cardId);
 
         return new CardModelAssembler().toModel(card);
+    }
+
+    @PutMapping("/{cardId}")
+    public RepresentationModel<CardResource> updateCard(@PathVariable UUID boardId, @PathVariable UUID columnId, @PathVariable UUID cardId, @RequestBody @Valid UpdateCardRequest card) {
+        var updatedCard = cardService.updateByBoardIdAndColumnIdAndId(boardId, columnId, cardId, UpdateCardDto.fromRequest(card));
+
+        return new CardModelAssembler().toModel(updatedCard);
     }
 }
