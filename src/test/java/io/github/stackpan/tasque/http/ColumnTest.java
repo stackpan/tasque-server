@@ -91,13 +91,13 @@ public class ColumnTest {
                                             containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, "f6968c9a-8fc3-4180-96be-a09809542339"))
                                     )
                             ),
-//                            jsonPath("$._embedded.columns[*]._links.cards.href").value(
-//                                    containsInAnyOrder(
-//                                            "/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "7ab312f3-2661-4de4-9755-42d194c253c2"),
-//                                            "/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "89143482-fdbc-47fa-9a60-fca63335521f"),
-//                                            "/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "f6968c9a-8fc3-4180-96be-a09809542339")
-//                                    )
-//                            ),
+                            jsonPath("$._embedded.columns[*]._links.cards.href").value(
+                                    containsInAnyOrder(
+                                            containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "7ab312f3-2661-4de4-9755-42d194c253c2")),
+                                            containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "89143482-fdbc-47fa-9a60-fca63335521f")),
+                                            containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, "f6968c9a-8fc3-4180-96be-a09809542339"))
+                                    )
+                            ),
                             jsonPath("$._embedded.columns[*]._embedded.cards").isArray(),
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
@@ -167,8 +167,8 @@ public class ColumnTest {
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
-                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID))
-//                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID)),
+                            jsonPath("$._links.cards.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID + "/cards"))
                     )
                     .andDo(result -> {
                         var responseContent = result.getResponse().getContentAsString();
@@ -446,7 +446,7 @@ public class ColumnTest {
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
                             jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, targetId))),
-//                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
+                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
                             jsonPath("$._embedded.cards").isArray()
                     );
         }
@@ -528,8 +528,8 @@ public class ColumnTest {
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._links.boards.href").value(containsString("/api/boards")),
                             jsonPath("$._links.board.href").value(containsString("/api/boards/%s".formatted(BOARD_ID))),
-                            jsonPath("$._links.self.href", matchesPattern("^.*/api/boards/" + BOARD_ID + "/columns/" + Regexps.UUID))
-//                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, targetId))),
+                            jsonPath("$._links.self.href").value(containsString("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))),
+                            jsonPath("$._links.cards.href").value(containsString("/api/boards/%s/columns/%s/cards".formatted(BOARD_ID, COLUMN_ID)))
                     );
 
             var updatedColumnMap = jdbcTemplate.queryForMap("SELECT * FROM columns WHERE columns.id = ?", UUID.fromString(COLUMN_ID));
