@@ -2,6 +2,7 @@ package io.github.stackpan.tasque.http;
 
 import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
+import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
 import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
@@ -50,11 +51,7 @@ public class ColumnTest {
         @Test
         void shouldReturnListOfColumn() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
@@ -108,11 +105,7 @@ public class ColumnTest {
         @Test
         void byUnknownBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns".formatted("0a2b0b12-1559-41cf-a4bd-a44fa0957b86"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -120,11 +113,7 @@ public class ColumnTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns".formatted("7e885910-1df0-4744-8083-73e1d9769062"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -146,11 +135,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -191,11 +176,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -231,11 +212,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -270,11 +247,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -310,11 +283,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -352,11 +321,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(post("/api/boards/%s/columns".formatted(BOARD_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -383,11 +348,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(get("/api/boards/%s/columns".formatted("0a2b0b12-1559-41cf-a4bd-a44fa0957b86"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -406,11 +367,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(get("/api/boards/%s/columns".formatted("7e885910-1df0-4744-8083-73e1d9769062"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -427,11 +384,7 @@ public class ColumnTest {
             var targetId = "7ab312f3-2661-4de4-9755-42d194c253c2";
 
             mockMvc.perform(get("/api/boards/%s/columns/%s".formatted(BOARD_ID, targetId))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
@@ -454,11 +407,7 @@ public class ColumnTest {
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns/%s".formatted(BOARD_ID, "855a4d8e-ae59-4850-8a4e-f7579e2517e7"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -466,11 +415,7 @@ public class ColumnTest {
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns/%s".formatted(BOARD_ID, "invaliduuid"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -478,11 +423,7 @@ public class ColumnTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/%s/columns/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", "e6be59bb-4178-4869-bfb2-1d09bc5af558"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -507,11 +448,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -561,11 +498,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -596,11 +529,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -629,11 +558,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, COLUMN_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -661,11 +586,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, "855a4d8e-ae59-4850-8a4e-f7579e2517e7"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -685,11 +606,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted(BOARD_ID, "invaliduuid"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -709,11 +626,7 @@ public class ColumnTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s/columns/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", "e6be59bb-4178-4869-bfb2-1d09bc5af558"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -730,11 +643,7 @@ public class ColumnTest {
             String columnId = "89143482-fdbc-47fa-9a60-fca63335521f";
 
             mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, columnId))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNoContent());
 
@@ -748,11 +657,7 @@ public class ColumnTest {
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, "855a4d8e-ae59-4850-8a4e-f7579e2517e7"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -760,11 +665,7 @@ public class ColumnTest {
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted(BOARD_ID, "invaliduuid"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -772,11 +673,7 @@ public class ColumnTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/%s/columns/%s".formatted("7e885910-1df0-4744-8083-73e1d9769062", "e6be59bb-4178-4869-bfb2-1d09bc5af558"))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
