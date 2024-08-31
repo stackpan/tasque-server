@@ -210,7 +210,7 @@ public class CardTest {
                     }
                     """;
 
-            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("684fc4c1-0d7f-4b7e-b468-6e7f045adcf1", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+            mockMvc.perform(post("/api/boards/%s/columns/%s/cards".formatted("684fc4c1-0d7f-4b7e-b468-6e7f045adcf1", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
@@ -232,7 +232,7 @@ public class CardTest {
                     }
                     """;
 
-            mockMvc.perform(get("/api/boards/%s/columns/%s/cards".formatted("7e885910-1df0-4744-8083-73e1d9769062", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
+            mockMvc.perform(post("/api/boards/%s/columns/%s/cards".formatted("7e885910-1df0-4744-8083-73e1d9769062", "75f6744c-9fa9-41ae-8ef7-2acff0bc6a5d"))
                             .with(jwt().jwt(jwt -> jwt
                                             .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
                                             .claim("scope", "ROLE_USER")
