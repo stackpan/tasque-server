@@ -2,6 +2,7 @@ package io.github.stackpan.tasque.http;
 
 import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
+import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
 import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
@@ -44,11 +45,7 @@ public class BoardTest {
         @Test
         void shouldReturnListOfBoard() throws Exception {
             mockMvc.perform(get("/api/boards")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
@@ -78,10 +75,10 @@ public class BoardTest {
                                     containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z", "2024-07-28T00:00:02Z")
                             ),
                             jsonPath("$._embedded.boards[*]._embedded.owner.id", everyItem(equalTo("172e7077-76a4-4fa3-879d-6ec767c655e6"))),
-                            jsonPath("$._embedded.boards[*]._embedded.owner.username", everyItem(equalTo("firstone"))),
-                            jsonPath("$._embedded.boards[*]._embedded.owner.email", everyItem(equalTo("firstone@example.com"))),
-                            jsonPath("$._embedded.boards[*]._embedded.owner.firstName", everyItem(equalTo("First"))),
-                            jsonPath("$._embedded.boards[*]._embedded.owner.lastName", everyItem(equalTo("One"))),
+                            jsonPath("$._embedded.boards[*]._embedded.owner.username", everyItem(equalTo("rizky"))),
+                            jsonPath("$._embedded.boards[*]._embedded.owner.email", everyItem(equalTo("rizky@example.com"))),
+                            jsonPath("$._embedded.boards[*]._embedded.owner.firstName", everyItem(equalTo("Rizky"))),
+                            jsonPath("$._embedded.boards[*]._embedded.owner.lastName", everyItem(equalTo("Anto"))),
                             jsonPath("$._embedded.boards[*]._embedded.owner.profilePictureUrl", everyItem(nullValue())),
                             jsonPath("$._embedded.boards[*]._embedded.owner.emailVerifiedAt", everyItem(nullValue())),
                             jsonPath("$._embedded.boards[*]._embedded.owner.createdAt", everyItem(equalTo("2024-07-28T00:00:00Z"))),
@@ -106,11 +103,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(post("/api/boards")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -129,10 +122,10 @@ public class BoardTest {
                             jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$._embedded.owner.username").value("firstone"),
-                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
-                            jsonPath("$._embedded.owner.firstName").value("First"),
-                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.username").value("rizky"),
+                            jsonPath("$._embedded.owner.email").value("rizky@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("Rizky"),
+                            jsonPath("$._embedded.owner.lastName").value("Anto"),
                             jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
                             jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
@@ -161,11 +154,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(post("/api/boards")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -184,10 +173,10 @@ public class BoardTest {
                             jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$._embedded.owner.username").value("firstone"),
-                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
-                            jsonPath("$._embedded.owner.firstName").value("First"),
-                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.username").value("rizky"),
+                            jsonPath("$._embedded.owner.email").value("rizky@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("Rizky"),
+                            jsonPath("$._embedded.owner.lastName").value("Anto"),
                             jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
                             jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
@@ -216,11 +205,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(post("/api/boards")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -244,11 +229,7 @@ public class BoardTest {
             var targetId = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
 
             mockMvc.perform(get("/api/boards/%s".formatted(targetId))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
@@ -263,10 +244,10 @@ public class BoardTest {
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$.updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$._embedded.owner.username").value("firstone"),
-                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
-                            jsonPath("$._embedded.owner.firstName").value("First"),
-                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.username").value("rizky"),
+                            jsonPath("$._embedded.owner.email").value("rizky@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("Rizky"),
+                            jsonPath("$._embedded.owner.lastName").value("Anto"),
                             jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
                             jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
@@ -280,11 +261,7 @@ public class BoardTest {
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -292,11 +269,7 @@ public class BoardTest {
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/invaliduuid")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -304,11 +277,7 @@ public class BoardTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -332,11 +301,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -354,10 +319,10 @@ public class BoardTest {
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$._embedded.owner.username").value("firstone"),
-                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
-                            jsonPath("$._embedded.owner.firstName").value("First"),
-                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.username").value("rizky"),
+                            jsonPath("$._embedded.owner.email").value("rizky@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("Rizky"),
+                            jsonPath("$._embedded.owner.lastName").value("Anto"),
                             jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
                             jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
@@ -392,11 +357,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -414,10 +375,10 @@ public class BoardTest {
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._embedded.owner.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$._embedded.owner.username").value("firstone"),
-                            jsonPath("$._embedded.owner.email").value("firstone@example.com"),
-                            jsonPath("$._embedded.owner.firstName").value("First"),
-                            jsonPath("$._embedded.owner.lastName").value("One"),
+                            jsonPath("$._embedded.owner.username").value("rizky"),
+                            jsonPath("$._embedded.owner.email").value("rizky@example.com"),
+                            jsonPath("$._embedded.owner.firstName").value("Rizky"),
+                            jsonPath("$._embedded.owner.lastName").value("Anto"),
                             jsonPath("$._embedded.owner.profilePictureUrl").isEmpty(),
                             jsonPath("$._embedded.owner.emailVerifiedAt").isEmpty(),
                             jsonPath("$._embedded.owner.createdAt").value("2024-07-28T00:00:00Z"),
@@ -449,11 +410,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/api/boards/%s".formatted(TARGET_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -479,11 +436,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -502,11 +455,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(put("/api/boards/invaliduuid")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -525,11 +474,7 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(get("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
                             .content(payload)
@@ -546,11 +491,7 @@ public class BoardTest {
             String TARGET_ID = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
 
             mockMvc.perform(delete("/api/boards/%s".formatted(TARGET_ID))
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNoContent());
 
@@ -561,11 +502,7 @@ public class BoardTest {
         @Test
         void byUnknownIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -573,11 +510,7 @@ public class BoardTest {
         @Test
         void byInvalidUuidShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/invaliduuid")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }
@@ -585,11 +518,7 @@ public class BoardTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
+                            .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
         }

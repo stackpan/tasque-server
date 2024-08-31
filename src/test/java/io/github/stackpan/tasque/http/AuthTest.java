@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.http;
 
 import io.github.stackpan.tasque.TestContainersConfig;
+import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
 import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
@@ -38,8 +39,8 @@ public class AuthTest {
         void withUsernameIdentityShouldReturnJwt() throws Exception {
             var payload = """
                     {
-                        "identity": "firstone",
-                        "secret": "firstone-Secret123!"
+                        "identity": "rizky",
+                        "secret": "rizky-Secret123!"
                     }
                     """;
 
@@ -62,8 +63,8 @@ public class AuthTest {
         void withEmailIdentityShouldReturnJwt() throws Exception {
             var payload = """
                     {
-                        "identity": "firstone@example.com",
-                        "secret": "firstone-Secret123!"
+                        "identity": "rizky@example.com",
+                        "secret": "rizky-Secret123!"
                     }
                     """;
 
@@ -127,21 +128,15 @@ public class AuthTest {
 
         @Test
         void shouldReturnUser() throws Exception {
-            mockMvc.perform(get("/api/auth/me")
-                            .with(jwt().jwt(jwt -> jwt
-                                            .claim("sub", "172e7077-76a4-4fa3-879d-6ec767c655e6")
-                                            .claim("scope", "ROLE_USER")
-                                    )
-                            )
-                    )
+            mockMvc.perform(get("/api/auth/me").with(UserMocks.rizkyJwt()))
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
                     .andExpectAll(
                             jsonPath("$.id").value("172e7077-76a4-4fa3-879d-6ec767c655e6"),
-                            jsonPath("$.username").value("firstone"),
-                            jsonPath("$.email").value("firstone@example.com"),
-                            jsonPath("$.firstName").value("First"),
-                            jsonPath("$.lastName").value("One"),
+                            jsonPath("$.username").value("rizky"),
+                            jsonPath("$.email").value("rizky@example.com"),
+                            jsonPath("$.firstName").value("Rizky"),
+                            jsonPath("$.lastName").value("Anto"),
                             jsonPath("$.profilePictureUrl").isEmpty(),
                             jsonPath("$.emailVerifiedAt").isEmpty(),
                             jsonPath("$.createdAt").value("2024-07-28T00:00:00Z"),
