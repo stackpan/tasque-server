@@ -1,9 +1,10 @@
 package io.github.stackpan.tasque.security;
 
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.AESEncrypter;
+import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
+import io.github.stackpan.tasque.config.properties.RsaConfigProperties;
 import io.github.stackpan.tasque.entity.User;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JweTokenizer implements Tokenizer {
 
-    private final SecretKey secretKey;
+    private final RsaConfigProperties rsaConfigProperties;
 
     @Value("${jwt.issuer:self}")
     private String jwtClaimsIssuer;
@@ -39,8 +38,8 @@ public class JweTokenizer implements Tokenizer {
     private JWEEncrypter encrypter;
 
     @PostConstruct
-    public void init() throws KeyLengthException {
-        this.encrypter = new AESEncrypter(secretKey);
+    public void init() throws JOSEException {
+        this.encrypter = new RSAEncrypter(rsaConfigProperties.toJoseRSAKey().toPublicJWK());
     }
 
     @Override
@@ -50,7 +49,7 @@ public class JweTokenizer implements Tokenizer {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
-        var header = new JWEHeader(JWEAlgorithm.A256GCMKW, EncryptionMethod.A256GCM);
+        var header = new JWEHeader(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A128GCM);
         var claims = new JWTClaimsSet.Builder()
                 .subject(((User) authenticated.getPrincipal()).getId().toString())
                 .jwtID(UUID.randomUUID().toString())
