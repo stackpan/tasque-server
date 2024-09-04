@@ -5,13 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,6 +23,9 @@ public class JwtTokenizer implements Tokenizer {
     @Value("${jwt.issuer:self}")
     private String jwtClaimsIssuer;
 
+    @Value("${jwt.audience:self}")
+    private String jwtClaimsAudience;
+
     @Value("${jwt.expiration:3600}")
     private Long jwtClaimsExpiration;
 
@@ -33,14 +36,21 @@ public class JwtTokenizer implements Tokenizer {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
+        var header = JwsHeader.with(MacAlgorithm.HS512)
+                .type("JWT")
+                .build();
+
         var claims = JwtClaimsSet.builder()
+                .id(UUID.randomUUID().toString())
                 .issuer(jwtClaimsIssuer)
+                .audience(List.of(jwtClaimsAudience))
                 .issuedAt(now)
+                .notBefore(now)
                 .expiresAt(now.plusSeconds(jwtClaimsExpiration))
                 .subject(((User) authenticated.getPrincipal()).getId().toString())
                 .claim("scope", scope)
                 .build();
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims));
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims));
     }
 }
