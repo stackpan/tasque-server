@@ -9,7 +9,7 @@ import io.github.stackpan.tasque.security.AuthToken;
 import io.github.stackpan.tasque.service.BoardService;
 import io.github.stackpan.tasque.service.util.BoardServiceUtil;
 import io.github.stackpan.tasque.service.util.UserServiceUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,6 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
     private final BoardServiceUtil boardServiceUtil;
-
     private final UserServiceUtil userServiceUtil;
 
     private final AuthToken authToken;
