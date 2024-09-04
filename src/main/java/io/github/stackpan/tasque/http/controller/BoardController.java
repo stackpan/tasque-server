@@ -1,11 +1,15 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.CreateBoardDto;
+import io.github.stackpan.tasque.data.MoveCardDto;
 import io.github.stackpan.tasque.data.UpdateBoardDto;
 import io.github.stackpan.tasque.http.assembler.BoardModelAssembler;
+import io.github.stackpan.tasque.http.assembler.ColumnModelAssembler;
 import io.github.stackpan.tasque.http.request.CreateBoardRequest;
+import io.github.stackpan.tasque.http.request.MoveCardRequest;
 import io.github.stackpan.tasque.http.request.UpdateBoardRequest;
 import io.github.stackpan.tasque.http.resource.BoardResource;
+import io.github.stackpan.tasque.http.resource.ColumnResource;
 import io.github.stackpan.tasque.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +70,18 @@ public class BoardController {
         boardService.deleteById(boardId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{boardId}/move-card")
+    public CollectionModel<RepresentationModel<ColumnResource>> moveCard(@PathVariable UUID boardId, @RequestBody @Valid MoveCardRequest request) {
+        var updatedColumns = boardService.moveCard(boardId, MoveCardDto.fromRequest(request))
+                .stream()
+                .map(column -> new ColumnModelAssembler().toModel(column))
+                .toList();
+
+        return CollectionModel.of(
+                updatedColumns,
+                linkTo(methodOn(ColumnController.class).listColumns(boardId)).withSelfRel()
+        );
     }
 }
