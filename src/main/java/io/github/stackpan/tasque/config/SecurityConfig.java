@@ -1,9 +1,11 @@
 package io.github.stackpan.tasque.config;
 
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import io.github.stackpan.tasque.config.properties.RsaConfigProperties;
+import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
 import io.github.stackpan.tasque.service.internal.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -38,8 +38,6 @@ import java.security.NoSuchAlgorithmException;
 public class SecurityConfig {
 
     private final UserServiceImpl userService;
-
-    private final RsaConfigProperties rsaConfigProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -80,22 +78,23 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey secretKey() throws NoSuchAlgorithmException {
-        return KeyGenerator.getInstance("HmacSha512").generateKey();
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder() throws NoSuchAlgorithmException {
-        var jwk = new OctetSequenceKey.Builder(secretKey())
-                .build();
-
-        var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwks);
+        var generator = KeyGenerator.getInstance("AES");
+        generator.init(EncryptionMethod.A256GCM.cekBitLength());
+        return generator.generateKey();
     }
 
     @Bean
     public JwtDecoder jwtDecoder() throws NoSuchAlgorithmException {
+        var jwkSource = new ImmutableJWKSet<>(
+                new JWKSet(new OctetSequenceKey.Builder(secretKey()).build())
+        );
+
         return NimbusJwtDecoder.withSecretKey(secretKey())
-                .macAlgorithm(MacAlgorithm.HS512)
+                .jwtProcessorCustomizer(processor -> processor
+                        .setJWEKeySelector(
+                                new JWEDecryptionKeySelector<>(JWEAlgorithm.A256GCMKW, EncryptionMethod.A256GCM, jwkSource)
+                        )
+                )
                 .build();
     }
 
