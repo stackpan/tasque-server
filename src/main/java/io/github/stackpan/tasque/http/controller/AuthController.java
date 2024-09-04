@@ -29,7 +29,7 @@ public class AuthController {
     @PostMapping("/login")
     public EntityModel<AuthResource> login(@RequestBody @Valid LoginRequest request) {
         var jwt = authService.login(AuthLoginDto.fromRequest(request));
-        var resource = AuthResource.fromJwt(jwt);
+        var resource = AuthResource.fromToken(jwt);
 
         return EntityModel.of(resource, linkTo(methodOn(AuthController.class).me()).withRel("me"));
     }

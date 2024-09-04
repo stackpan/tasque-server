@@ -1,4 +1,4 @@
-package io.github.stackpan.tasque.service.util;
+package io.github.stackpan.tasque.service.internal;
 
 import io.github.stackpan.tasque.data.CreateCardDto;
 import io.github.stackpan.tasque.data.UpdateCardDto;
@@ -7,6 +7,7 @@ import io.github.stackpan.tasque.entity.Card;
 import io.github.stackpan.tasque.repository.CardRepository;
 import io.github.stackpan.tasque.repository.ColumnRepository;
 import io.github.stackpan.tasque.service.CardService;
+import io.github.stackpan.tasque.service.util.BoardServiceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

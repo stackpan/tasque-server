@@ -6,7 +6,6 @@ import io.github.stackpan.tasque.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +17,7 @@ public class AuthServiceImpl implements AuthService {
     private final Tokenizer tokenizer;
 
     @Override
-    public Jwt login(AuthLoginDto data) {
+    public String login(AuthLoginDto data) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(data.principal(), data.credential());
         var authenticated = authenticationManager.authenticate(authenticationToken);
 
