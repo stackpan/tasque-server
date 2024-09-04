@@ -4,8 +4,11 @@ import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
+import io.github.stackpan.tasque.config.properties.RsaConfigProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -16,7 +19,10 @@ import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 
 @Configuration
+@RequiredArgsConstructor
 public class TokenizationConfig {
+
+    private final RsaConfigProperties rsaConfigProperties;
 
     @Bean
     public SecretKey secretKey() throws NoSuchAlgorithmException {
@@ -28,13 +34,13 @@ public class TokenizationConfig {
     @Bean
     public JwtDecoder jwtDecoder() throws NoSuchAlgorithmException {
         var jwkSource = new ImmutableJWKSet<>(
-                new JWKSet(new OctetSequenceKey.Builder(secretKey()).build())
+                new JWKSet(rsaConfigProperties.toJoseRSAKey())
         );
 
         return NimbusJwtDecoder.withSecretKey(secretKey())
                 .jwtProcessorCustomizer(processor -> processor
                         .setJWEKeySelector(
-                                new JWEDecryptionKeySelector<>(JWEAlgorithm.A256GCMKW, EncryptionMethod.A256GCM, jwkSource)
+                                new JWEDecryptionKeySelector<>(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A128GCM, jwkSource)
                         )
                 )
                 .build();
