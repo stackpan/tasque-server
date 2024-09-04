@@ -5,6 +5,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface Tokenizer {
 
-    Jwt generate(Authentication authenticated);
+    String generate(Authentication authenticated);
 
 }

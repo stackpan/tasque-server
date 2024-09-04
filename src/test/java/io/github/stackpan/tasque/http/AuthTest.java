@@ -1,5 +1,6 @@
 package io.github.stackpan.tasque.http;
 
+import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
 import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -53,8 +55,6 @@ public class AuthTest {
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
                     .andExpectAll(
                             jsonPath("$.token").isString(),
-                            jsonPath("$.type").value("JWT"),
-                            jsonPath("$.expiresAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._links.me.href").value(containsString("/api/auth/me"))
                     );
         }
@@ -77,8 +77,6 @@ public class AuthTest {
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
                     .andExpectAll(
                             jsonPath("$.token").isString(),
-                            jsonPath("$.type").value("JWT"),
-                            jsonPath("$.expiresAt", matchesPattern(Regexps.TIMESTAMP)),
                             jsonPath("$._links.me.href").value(containsString("/api/auth/me"))
                     );
         }
@@ -128,7 +126,26 @@ public class AuthTest {
 
         @Test
         void shouldReturnUser() throws Exception {
-            mockMvc.perform(get("/api/auth/me").with(UserMocks.rizkyJwt()))
+            var payload = """
+                    {
+                        "identity": "rizky",
+                        "secret": "rizky-Secret123!"
+                    }
+                    """;
+
+            var loginResponse = mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andReturn();
+
+            var responseBody = loginResponse.getResponse().getContentAsString();
+            var token = JsonPath.<String>read(responseBody, "$.token");
+
+            mockMvc.perform(get("/api/auth/me")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
+                    )
                     .andExpect(status().isOk())
                     .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
                     .andExpectAll(
