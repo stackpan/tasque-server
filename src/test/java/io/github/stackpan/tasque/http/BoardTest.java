@@ -21,15 +21,20 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest
 @Import(TestContainersConfig.class)
-@Sql(scripts = {"classpath:datasources/user.sql", "classpath:datasources/board.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(statements = {"delete from boards", "delete from users"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(
+        scripts = {"classpath:datasources/user.sql", "classpath:datasources/board.sql"},
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+)
+@Sql(
+        statements = {"DELETE FROM boards", "DELETE FROM users"},
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+)
 @AutoConfigureMockMvc
 public class BoardTest {
 
@@ -519,6 +524,214 @@ public class BoardTest {
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
                             .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @Sql(
+            scripts = {
+                    "classpath:datasources/user.sql",
+                    "classpath:datasources/board.sql",
+                    "classpath:datasources/column.sql",
+                    "classpath:datasources/card.sql"
+            },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            statements = {
+                    "DELETE FROM cards",
+                    "DELETE FROM columns",
+                    "DELETE FROM boards",
+                    "DELETE FROM users"
+            },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    class MoveCard {
+
+        private final String BOARD_ID = "0eec62bb-e1b6-40d8-aa3e-349853b96b6e";
+
+        @Test
+        void shouldReturnListOfColumnsWithCardLoadedAndMovedInDatabase() throws Exception {
+            final String TARGET_CARD_ID = "d8355640-cf9c-45ec-a1ee-398157f5a544";
+            final String DESTINATION_COLUMN_ID = "89143482-fdbc-47fa-9a60-fca63335521f";
+
+            var payload = """
+                    {
+                        "targetCardId": "%s",
+                        "destinationColumnId": "%s"
+                    }
+                    """.formatted(TARGET_CARD_ID, DESTINATION_COLUMN_ID);
+
+            mockMvc.perform(post("/api/boards/%s/move-card".formatted(BOARD_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$._embedded.columns.length()").value(3),
+                            jsonPath("$._embedded.columns[*]._embedded.cards.length()").value(
+                                    containsInAnyOrder(1, 1, 0)
+                            ),
+                            jsonPath("$._embedded.columns[?(@.id == '%s')]._embedded.cards.length()".formatted(DESTINATION_COLUMN_ID)).value(1)
+                    );
+
+            var column1CardsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM cards WHERE column_id = ?", Integer.class, UUID.fromString("7ab312f3-2661-4de4-9755-42d194c253c2"));
+            assertEquals(1, column1CardsCount);
+
+            var column2CardsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM cards WHERE id = ? AND column_id = ?", Integer.class, UUID.fromString(TARGET_CARD_ID), UUID.fromString(DESTINATION_COLUMN_ID));
+            assertEquals(1, column2CardsCount);
+        }
+
+        @Test
+        void invalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": 900
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/move-card".formatted(BOARD_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.targetCardId").isArray(),
+                            jsonPath("$._embedded.payloadErrors.destinationColumnId").isArray()
+                    );
+        }
+
+        @Test
+        void unknownTargetCardShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "64393703-6a7a-4992-b2a3-6a4cea6de646",
+                        "destinationColumnId": "89143482-fdbc-47fa-9a60-fca63335521f"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/move-card".formatted(BOARD_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.targetCardId").isArray(),
+                            jsonPath("$._embedded.payloadErrors.destinationColumnId").doesNotExist()
+                    );
+        }
+
+        @Test
+        void sameColumnShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "7ab312f3-2661-4de4-9755-42d194c253c2"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/move-card".formatted(BOARD_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.targetCardId").isArray(),
+                            jsonPath("$._embedded.payloadErrors.destinationColumnId").isArray()
+                    );
+        }
+
+        @Test
+        void unknownColumnShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "35413f08-9ff2-4d4d-ad13-af505b5b1c3c"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/%s/move-card".formatted(BOARD_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.targetCardId").doesNotExist(),
+                            jsonPath("$._embedded.payloadErrors.destinationColumnId").isArray()
+                    );
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "89143482-fdbc-47fa-9a60-fca63335521f"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/75d46c19-d28e-4a8d-8e7c-19220b15c507/move-card")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "89143482-fdbc-47fa-9a60-fca63335521f"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/invalid-uuid/move-card")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "89143482-fdbc-47fa-9a60-fca63335521f"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/boards/7e885910-1df0-4744-8083-73e1d9769062/move-card")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
                     )
                     .andExpect(status().isNotFound());
         }

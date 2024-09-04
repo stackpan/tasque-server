@@ -1,5 +1,6 @@
 package io.github.stackpan.tasque.http.controller;
 
+import io.github.stackpan.tasque.exception.DtoFieldException;
 import io.github.stackpan.tasque.http.resource.ErrorResource;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.hateoas.LinkRelation;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -23,6 +25,16 @@ import java.util.UUID;
 
 @RestControllerAdvice
 public class ErrorController extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(DtoFieldException.class)
+    public ResponseEntity<Object> handleDtoFieldException(DtoFieldException ex, WebRequest request) {
+        var resource = new ErrorResource("Invalid payload.");
+        var model = HalModelBuilder.halModelOf(resource)
+                .embed(ex.getErrors(), LinkRelation.of("payloadErrors"))
+                .build();
+
+        return ResponseEntity.badRequest().body(model);
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
