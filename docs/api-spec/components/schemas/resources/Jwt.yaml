@@ -2,12 +2,6 @@ type: object
 properties:
   token:
     type: string
-  type:
-    type: string
-    example: 'JWT'
-  expiresAt:
-    type: string
-    format: 'YYYY-MM-DDTHH:mm:ss.sssZ'
   _links:
     type: object
     properties:
@@ -23,6 +17,4 @@ properties:
       - me
 required:
   - token
-  - type
-  - expiresAt
   - _links
