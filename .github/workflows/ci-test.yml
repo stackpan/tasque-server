@@ -20,10 +20,9 @@ jobs:
 
       - name: Generate RSA keys
         run: |
-          mkdir -p src/main/resources
-          openssl genpkey -algorithm RSA -out src/main/resources/private.pem -pkeyopt rsa_keygen_bits:2048
-          openssl rsa -pubout -in src/main/resources/private.pem -out src/main/resources/public.pem
-          
+          openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in private.pem -out public.pem
+
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
