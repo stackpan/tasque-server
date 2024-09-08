@@ -2,9 +2,7 @@ package io.github.stackpan.tasque.http;
 
 import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
-import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
-import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -33,7 +33,7 @@ public class ColumnServiceImpl implements ColumnService {
 
     @Override
     public BoardColumn getByBoardIdAndId(UUID boardId, UUID columnId) {
-        var board = boardServiceUtil.authorizedFindById(boardId);
+        boardServiceUtil.authorizedFindById(boardId);
 
         return columnServiceUtil.findByIdOrThrowsNotFound(columnId);
     }

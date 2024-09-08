@@ -3,7 +3,6 @@ package io.github.stackpan.tasque.data;
 import io.github.stackpan.tasque.http.request.CreateColumnRequest;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public record CreateColumnDto(
         String name,

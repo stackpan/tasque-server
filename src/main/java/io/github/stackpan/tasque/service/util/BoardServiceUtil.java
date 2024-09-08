@@ -3,7 +3,6 @@ package io.github.stackpan.tasque.service.util;
 import io.github.stackpan.tasque.entity.Board;
 import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.repository.BoardRepository;
-import io.github.stackpan.tasque.repository.UserRepository;
 import io.github.stackpan.tasque.security.AuthToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,8 +14,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class BoardServiceUtil {
-
-    private final UserRepository userRepository;
 
     private final BoardRepository boardRepository;
 

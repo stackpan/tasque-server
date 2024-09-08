@@ -3,8 +3,6 @@ package io.github.stackpan.tasque.config;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
 import io.github.stackpan.tasque.config.properties.RsaConfigProperties;
