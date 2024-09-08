@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorization -> authorization
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .build();
