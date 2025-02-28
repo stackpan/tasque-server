@@ -1,14 +1,23 @@
 package io.github.stackpan.tasque.http;
 
 import io.github.stackpan.tasque.TestContainersConfig;
+import io.github.stackpan.tasque.UserMocks;
+import io.github.stackpan.tasque.util.ExtMediaType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.*;
 
 @SpringBootTest
 @Import(TestContainersConfig.class)
@@ -29,7 +38,63 @@ public class TeamTest {
     @Nested
     class GetTeams {
 
-
-
+        @Test
+        void shouldReturnListOfJoinedTeams() throws Exception {
+            mockMvc.perform(get("/api/teams").with(UserMocks.rizkyJwt()))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$._embedded.teams.length()").value(2),
+                            jsonPath("$._embedded.teams[*].id").value(
+                                    containsInAnyOrder("a8119215-c4cc-446a-808b-ff28c2ee9f3c", "1ce806d6-368a-48bc-8a24-394c78f3a568")
+                            ),
+                            jsonPath("$._embedded.teams[*].name").value(
+                                    containsInAnyOrder("Team 1", "Team 2")
+                            ),
+                            jsonPath("$._embedded.teams[*].description").value(
+                                    containsInAnyOrder("Team 1 description", "Team 2 description")
+                            ),
+                            jsonPath("$._embedded.teams[*].profilePictureUrl").value(
+                                    containsInAnyOrder(
+                                            "https://fastly.picsum.photos/id/586/200/200.jpg?hmac=qCQKBciYy8H3AxcVxnTZLYwXw02r33F5_3E4UmlB8H4",
+                                            "https://fastly.picsum.photos/id/318/200/200.jpg?hmac=bXfpcSpOySqXMIev1AISKO15vvxPgau4JEA36kuhG1Y"
+                                    )
+                            ),
+                            jsonPath("$._embedded.teams[*].createdAt").value(
+                                    containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z")
+                            ),
+                            jsonPath("$._embedded.teams[*].updatedAt").value(
+                                    containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z")
+                            ),
+                            jsonPath("$._embedded.teams[*]._links.self.href").value(
+                                    containsInAnyOrder(
+                                            containsString("/teams/%s".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+                                            containsString("/teams/%s".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+                                    )
+                            ),
+//                            jsonPath("$._embedded.teams[*]._links.upload.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/upload".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/upload".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+//                            jsonPath("$._embedded.teams[*]._links.transferOwnership.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/transfer-ownership".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/transfer-ownership".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+//                            jsonPath("$._embedded.teams[*]._links.members.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/members".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/members".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+//                            jsonPath("$._embedded.teams[*]._embedded.memberCount").value(
+//                                    containsInRelativeOrder(2, 1)
+//                            ),
+                            jsonPath("$._links.self.href").value(containsString("/teams"))
+                    );
+        }
     }
 }

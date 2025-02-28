@@ -4,12 +4,14 @@ import io.github.stackpan.tasque.entity.Team;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
 @Value
+@Relation(collectionRelation = "teams", itemRelation = "team")
 public class TeamResource extends RepresentationModel<TeamResource> {
 
     UUID id;
