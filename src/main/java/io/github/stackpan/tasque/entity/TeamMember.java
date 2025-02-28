@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -28,7 +29,9 @@ public class TeamMember {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "?::memberrole")
+    private Role role;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -39,7 +42,7 @@ public class TeamMember {
     private Instant updatedAt;
 
     public enum Role {
-        OWNER, EDITOR, VIEWER;
+        OWNER, EDITOR, VIEWER
     }
 
 }
