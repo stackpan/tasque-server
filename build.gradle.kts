@@ -1,8 +1,7 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.3.2"
-	id("io.spring.dependency-management") version "1.1.6"
-	id("org.asciidoctor.jvm.convert") version "3.3.2"
+	id("org.springframework.boot") version "3.4.3"
+	id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "io.github.stackpan"
@@ -24,10 +23,10 @@ repositories {
 	mavenCentral()
 }
 
-extra["snippetsDir"] = file("build/generated-snippets")
-extra["springCloudVersion"] = "2023.0.3"
+extra["springCloudVersion"] = "2024.0.0"
 
 dependencies {
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-hateoas")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -35,18 +34,18 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    compileOnly("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	runtimeOnly("org.postgresql:postgresql")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.security:spring-security-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
-	testImplementation("org.testcontainers:postgresql:1.20.0")
+	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:postgresql")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {
@@ -57,13 +56,4 @@ dependencyManagement {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-tasks.test {
-	outputs.dir(project.extra["snippetsDir"]!!)
-}
-
-tasks.asciidoctor {
-	inputs.dir(project.extra["snippetsDir"]!!)
-	dependsOn(tasks.test)
 }
