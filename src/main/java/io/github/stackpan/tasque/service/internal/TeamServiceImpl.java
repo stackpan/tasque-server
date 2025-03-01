@@ -6,10 +6,12 @@ import io.github.stackpan.tasque.repository.TeamMemberRepository;
 import io.github.stackpan.tasque.repository.TeamRepository;
 import io.github.stackpan.tasque.security.AuthToken;
 import io.github.stackpan.tasque.service.TeamService;
+import io.github.stackpan.tasque.service.util.TeamServiceUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
 
-    private final TeamMemberRepository teamMemberRepository;
+    private final TeamServiceUtil teamServiceUtil;
 
     private final AuthToken authToken;
 
@@ -27,5 +29,10 @@ public class TeamServiceImpl implements TeamService {
         user.setId(authToken.getCurrentSubject());
 
         return (List<Team>) teamRepository.getByUser(user);
+    }
+
+    @Override
+    public Team getById(UUID teamId) {
+        return teamServiceUtil.authorizedFindById(teamId);
     }
 }

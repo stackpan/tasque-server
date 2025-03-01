@@ -90,11 +90,72 @@ public class TeamTest {
 //                                            containsString("/teams/%s/members".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
 //                                    )
 //                            ),
-//                            jsonPath("$._embedded.teams[*]._embedded.memberCount").value(
-//                                    containsInRelativeOrder(2, 1)
-//                            ),
                             jsonPath("$._links.self.href").value(containsString("/teams"))
                     );
+        }
+    }
+
+    @Nested
+    class GetTeam {
+
+        @Test
+        void shouldReturnTeam() throws Exception {
+            var targetId = "a8119215-c4cc-446a-808b-ff28c2ee9f3c";
+
+            mockMvc.perform(get("/api/teams/%s".formatted(targetId)).with(UserMocks.rizkyJwt()))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("id").value(targetId),
+                            jsonPath("name").value("Team 1"),
+                            jsonPath("description").value("Team 1 description"),
+                            jsonPath("profilePictureUrl").value("https://fastly.picsum.photos/id/586/200/200.jpg?hmac=qCQKBciYy8H3AxcVxnTZLYwXw02r33F5_3E4UmlB8H4"),
+                            jsonPath("createdAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("updatedAt").value("2024-07-28T00:00:00Z"),
+                            jsonPath("_links.self.href").value(containsString("/teams/%s".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")))
+//                            jsonPath("$._embedded.teams[*]._links.upload.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/upload".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/upload".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+//                            jsonPath("$._embedded.teams[*]._links.transferOwnership.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/transfer-ownership".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/transfer-ownership".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+//                            jsonPath("$._embedded.teams[*]._links.members.href").value(
+//                                    containsInAnyOrder(
+//                                            containsString("/teams/%s/members".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")),
+//                                            containsString("/teams/%s/members".formatted("1ce806d6-368a-48bc-8a24-394c78f3a568"))
+//                                    )
+//                            ),
+                    );
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/teams/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/teams/invaliduuid")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byNotJoinTeamIdShouldNotFound() throws Exception {
+            mockMvc.perform(get("/api/teams/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
         }
     }
 }

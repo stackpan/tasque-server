@@ -35,6 +35,8 @@ public class TeamController {
 
     @GetMapping("/{teamId}")
     public RepresentationModel<TeamResource> getTeam(@PathVariable UUID teamId) {
-        return null;
+        var team = teamService.getById(teamId);
+
+        return new TeamModelAssembler().toModel(team);
     }
 }
