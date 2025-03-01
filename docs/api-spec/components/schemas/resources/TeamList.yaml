@@ -6,7 +6,7 @@ properties:
       teams:
         type: array
         items:
-          $ref: './TeamWithMemberCount.yaml'
+          $ref: './Team.yaml'
     required:
       - teams
   _links:

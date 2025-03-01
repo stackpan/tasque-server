@@ -11,7 +11,7 @@ get:
       content:
         application/hal+json:
           schema:
-            $ref: '../../components/schemas/resources/TeamWithMemberCount.yaml'
+            $ref: '../../components/schemas/resources/Team.yaml'
     404:
       description: Not found
 put:
