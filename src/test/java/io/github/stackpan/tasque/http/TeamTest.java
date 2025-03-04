@@ -1,8 +1,10 @@
 package io.github.stackpan.tasque.http;
 
+import com.jayway.jsonpath.JsonPath;
 import io.github.stackpan.tasque.TestContainersConfig;
 import io.github.stackpan.tasque.UserMocks;
 import io.github.stackpan.tasque.util.ExtMediaType;
+import io.github.stackpan.tasque.util.Regexps;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -34,6 +40,9 @@ public class TeamTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Nested
     class GetTeams {
@@ -88,6 +97,107 @@ public class TeamTest {
 //                                    )
 //                            ),
                             jsonPath("$._links.self.href").value(containsString("/teams"))
+                    );
+        }
+    }
+
+    @Nested
+    class CreateTeam {
+
+        @Test
+        void shouldCreatedAndReturnCreatedTeamAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                      "name": "Team Test",
+                      "description": "Sample description."
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/teams")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/teams/" + Regexps.UUID)))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("name").value("Team Test"),
+                            jsonPath("description").value("Sample description."),
+                            jsonPath("profilePictureUrl").isEmpty(),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/teams/" + Regexps.UUID))
+                    ).andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var count = jdbcTemplate.queryForObject("select count(*) from teams where id = ?", Integer.class, UUID.fromString(createdId));
+
+                        assertEquals(1, count);
+                    });
+        }
+
+        @Test
+        void withNullablePayloadShouldCreatedAndStoredInDatabase() throws Exception {
+            var payload = """
+                    {
+                      "name": "Team Test",
+                      "description": null
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/teams")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpect(header().string(HttpHeaders.LOCATION, matchesPattern("^.*/api/teams/" + Regexps.UUID)))
+                    .andExpectAll(
+                            jsonPath("$.id", matchesPattern(Regexps.UUID)),
+                            jsonPath("name").value("Team Test"),
+                            jsonPath("description").isEmpty(),
+                            jsonPath("profilePictureUrl").isEmpty(),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$._links.self.href", matchesPattern("^.*/api/teams/" + Regexps.UUID))
+                    )
+                    .andDo(result -> {
+                        var responseContent = result.getResponse().getContentAsString();
+
+                        var createdId = JsonPath.<String>read(responseContent, "$.id");
+                        var count = jdbcTemplate.queryForObject("select count(*) from teams where id = ?", Integer.class, UUID.fromString(createdId));
+
+                        assertEquals(count, 1);
+                    });
+        }
+
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                      "name": 999
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/teams")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist()
                     );
         }
     }
