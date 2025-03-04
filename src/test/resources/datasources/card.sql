@@ -1,4 +1,4 @@
-INSERT INTO cards (id, column_id, body, color_hex, created_at, updated_at)
+INSERT INTO cards
 VALUES ('d8355640-cf9c-45ec-a1ee-398157f5a544', '7ab312f3-2661-4de4-9755-42d194c253c2', 'Card 111', '#ffffff',
         '2024-07-28T00:00:00.00000+00:00',
         '2024-07-28T00:00:00.00000+00:00'),

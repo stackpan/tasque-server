@@ -27,8 +27,8 @@ public final class Board implements Serializable {
     @Column(length = 1024)
     private String description;
 
-    @Column(name = "banner_picture_url", length = 1024)
-    private String bannerPictureUrl;
+    @Column(name = "banner_picture", length = 1024)
+    private String bannerPicture;
 
     @Column(name = "color_hex", length = 7)
     private String colorHex;

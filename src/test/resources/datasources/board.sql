@@ -1,5 +1,4 @@
-insert into boards (id, name, description, banner_picture_url, color_hex, owner_id, owner_type, created_at, updated_at,
-                    deleted_at)
+insert into boards
 values ('0eec62bb-e1b6-40d8-aa3e-349853b96b6e', 'Board One', 'A long description of Board One.', null, '#000000',
         '172e7077-76a4-4fa3-879d-6ec767c655e6', 'USER', '2024-07-28T00:00:00.00000+00:00',
         '2024-07-28T00:00:00.00000+00:00', null),

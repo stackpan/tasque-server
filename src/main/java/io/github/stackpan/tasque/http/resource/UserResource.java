@@ -39,7 +39,7 @@ public class UserResource extends RepresentationModel<UserResource> {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getProfilePictureUrl(),
+                user.getProfilePicture(),
                 Objects.nonNull(user.getEmailVerifiedAt()) ? user.getEmailVerifiedAt().atOffset(ZoneOffset.UTC) : null,
                 user.getCreatedAt().atOffset(ZoneOffset.UTC),
                 user.getUpdatedAt().atOffset(ZoneOffset.UTC)

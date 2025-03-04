@@ -1,27 +1,27 @@
 create table users
 (
-    id                  uuid          not null primary key,
-    username            varchar(16)   not null unique,
-    email               varchar(64)   not null unique,
-    first_name          varchar(32)   not null,
-    last_name           varchar(64),
-    profile_picture_url varchar(1024),
-    password            varchar(4096) not null,
-    email_verified_at   timestamp,
-    created_at          timestamp     not null,
-    updated_at          timestamp     not null,
-    deleted_at          timestamp
+    id                uuid          not null primary key,
+    username          varchar(16)   not null unique,
+    email             varchar(64)   not null unique,
+    first_name        varchar(32)   not null,
+    last_name         varchar(64),
+    profile_picture   varchar(128),
+    password          varchar(4096) not null,
+    email_verified_at timestamp,
+    created_at        timestamp     not null,
+    updated_at        timestamp     not null,
+    deleted_at        timestamp
 );
 
 create table teams
 (
-    id                  uuid        not null primary key,
-    name                varchar(32) not null,
-    description         varchar(1024),
-    profile_picture_url varchar(1024),
-    created_at          timestamp   not null,
-    updated_at          timestamp   not null,
-    deleted_at          timestamp
+    id              uuid        not null primary key,
+    name            varchar(32) not null,
+    description     varchar(1024),
+    profile_picture varchar(128),
+    created_at      timestamp   not null,
+    updated_at      timestamp   not null,
+    deleted_at      timestamp
 );
 
 create type memberrole as enum ('OWNER', 'EDITOR', 'VIEWER');
@@ -56,16 +56,16 @@ create table user_team_invitations
 
 create table boards
 (
-    id                 uuid        not null primary key,
-    name               varchar(64) not null,
-    description        varchar(1024),
-    banner_picture_url varchar(1024),
-    color_hex          varchar(7),
-    owner_id           uuid        not null,
-    owner_type         varchar(32) not null,
-    created_at         timestamp   not null,
-    updated_at         timestamp   not null,
-    deleted_at         timestamp,
+    id             uuid        not null primary key,
+    name           varchar(64) not null,
+    description    varchar(1024),
+    banner_picture varchar(128),
+    color_hex      varchar(7),
+    owner_id       uuid        not null,
+    owner_type     varchar(32) not null,
+    created_at     timestamp   not null,
+    updated_at     timestamp   not null,
+    deleted_at     timestamp,
     check (owner_type in ('USER', 'TEAM')),
     check (color_hex ~ '^#[0-9a-f]{6}$')
 );
