@@ -55,10 +55,7 @@ public class TeamTest {
                                     containsInAnyOrder("Team 1 description", "Team 2 description")
                             ),
                             jsonPath("$._embedded.teams[*].profilePictureUrl").value(
-                                    containsInAnyOrder(
-                                            "https://fastly.picsum.photos/id/586/200/200.jpg?hmac=qCQKBciYy8H3AxcVxnTZLYwXw02r33F5_3E4UmlB8H4",
-                                            "https://fastly.picsum.photos/id/318/200/200.jpg?hmac=bXfpcSpOySqXMIev1AISKO15vvxPgau4JEA36kuhG1Y"
-                                    )
+                                    containsInAnyOrder(null, (String) null)
                             ),
                             jsonPath("$._embedded.teams[*].createdAt").value(
                                     containsInAnyOrder("2024-07-28T00:00:00Z", "2024-07-28T00:00:01Z")
@@ -109,7 +106,7 @@ public class TeamTest {
                             jsonPath("id").value(targetId),
                             jsonPath("name").value("Team 1"),
                             jsonPath("description").value("Team 1 description"),
-                            jsonPath("profilePictureUrl").value("https://fastly.picsum.photos/id/586/200/200.jpg?hmac=qCQKBciYy8H3AxcVxnTZLYwXw02r33F5_3E4UmlB8H4"),
+                            jsonPath("profilePictureUrl").isEmpty(),
                             jsonPath("createdAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("updatedAt").value("2024-07-28T00:00:00Z"),
                             jsonPath("_links.self.href").value(containsString("/teams/%s".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")))

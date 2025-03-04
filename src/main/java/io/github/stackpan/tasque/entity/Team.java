@@ -27,7 +27,7 @@ public class Team implements BoardOwner {
 
     private String description;
 
-    private String profilePictureUrl;
+    private String profilePicture;
 
     @OneToMany(mappedBy = "team")
     private List<TeamMember> teamMembers;

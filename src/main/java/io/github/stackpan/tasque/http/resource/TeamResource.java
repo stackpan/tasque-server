@@ -31,7 +31,7 @@ public class TeamResource extends RepresentationModel<TeamResource> {
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getProfilePictureUrl(),
+                entity.getProfilePicture(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
