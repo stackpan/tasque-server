@@ -38,7 +38,7 @@ public class BoardResource extends RepresentationModel<BoardResource> {
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getBannerPictureUrl(),
+                entity.getBannerPicture(),
                 entity.getColorHex(),
                 entity.getOwnerId(),
                 entity.getOwnerType().toString(),

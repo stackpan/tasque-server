@@ -39,8 +39,8 @@ public class User implements UserDetails, BoardOwner {
     @Column(name = "last_name", length = 64)
     private String lastName;
 
-    @Column(name = "profile_picture_url", length = 1024)
-    private String profilePictureUrl;
+    @Column(name = "profile_picture", length = 1024)
+    private String profilePicture;
 
     @Column(length = 4096, nullable = false)
     private String password;

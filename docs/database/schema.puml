@@ -6,7 +6,7 @@ entity users {
     * email : varchar(64)
     * first_name : varchar(32)
     last_name : varchar(64)
-    profile_picture_url : varchar(1024)
+    profile_picture : varchar(128)
     * password : varchar(4096)
     email_verified_at : timestamp
     * created_at : timestamp
@@ -21,7 +21,7 @@ entity teams {
     * id : uuid
     * name : varchar(32)
     description: varchar(1024)
-    profile_picture_url : varchar(1024)
+    profile_picture : varchar(128)
     * created_at : timestamp
     * updated_at : timestamp
     deleted_at : timestamp
@@ -58,7 +58,7 @@ entity boards {
     * id : uuid
     * name : varchar(64)
     description : varchar(1024)
-    banner_picture_url : varchar(1024)
+    banner_picture : varchar(128)
     color_hex : varchar(7)
     * owner_id : uuid
     * owner_type : varchar(32)

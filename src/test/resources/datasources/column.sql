@@ -1,4 +1,4 @@
-insert into columns (id, position, board_id, name, description, color_hex, created_at, updated_at)
+insert into columns
 values ('7ab312f3-2661-4de4-9755-42d194c253c2', 0, '0eec62bb-e1b6-40d8-aa3e-349853b96b6e', 'Column 11',
         'A long description of Column 11', '#ffffff',
         '2024-07-28T00:00:00.00000+00:00',
