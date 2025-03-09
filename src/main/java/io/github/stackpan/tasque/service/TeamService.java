@@ -17,4 +17,6 @@ public interface TeamService {
 
     Team updateById(UUID teamId, UpdateTeamDto data);
 
+    void deleteById(UUID teamId);
+
 }

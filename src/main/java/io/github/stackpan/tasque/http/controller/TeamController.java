@@ -60,4 +60,11 @@ public class TeamController {
 
         return new TeamModelAssembler().toModel(updatedTeam);
     }
+
+    @DeleteMapping("/{teamId}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable UUID teamId) {
+        teamService.deleteById(teamId);
+
+        return ResponseEntity.noContent().build();
+    }
 }

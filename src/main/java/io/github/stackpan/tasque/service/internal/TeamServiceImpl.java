@@ -73,4 +73,12 @@ public class TeamServiceImpl implements TeamService {
 
         return teamRepository.save(team);
     }
+
+    @Override
+    @Transactional
+    public void deleteById(UUID teamId) {
+        var team = teamServiceUtil.authorizedFindById(teamId);
+
+        teamRepository.softDeleteById(teamId);
+    }
 }

@@ -427,4 +427,46 @@ public class TeamTest {
                     .andExpect(status().isNotFound());
         }
     }
+
+
+    @Nested
+    class DeleteTeam {
+
+        @Test
+        void shouldNoContentAndFilledDeletedAtInDatabase() throws Exception {
+            String TARGET_ID = "a8119215-c4cc-446a-808b-ff28c2ee9f3c";
+
+            mockMvc.perform(delete("/api/teams/%s".formatted(TARGET_ID))
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNoContent());
+
+            var count = jdbcTemplate.queryForObject("select count(*) from teams where id = ? and deleted_at is null", Integer.class, UUID.fromString(TARGET_ID));
+            assertEquals(count, 0);
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/teams/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/teams/invaliduuid")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedBoardIdShouldNotFound() throws Exception {
+            mockMvc.perform(delete("/api/teams/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
 }
