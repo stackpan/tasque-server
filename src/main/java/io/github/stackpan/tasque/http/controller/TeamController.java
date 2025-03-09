@@ -1,8 +1,10 @@
 package io.github.stackpan.tasque.http.controller;
 
 import io.github.stackpan.tasque.data.CreateTeamDto;
+import io.github.stackpan.tasque.data.UpdateTeamDto;
 import io.github.stackpan.tasque.http.assembler.TeamModelAssembler;
 import io.github.stackpan.tasque.http.request.CreateTeamRequest;
+import io.github.stackpan.tasque.http.request.UpdateTeamRequest;
 import io.github.stackpan.tasque.http.resource.TeamResource;
 import io.github.stackpan.tasque.service.TeamService;
 import jakarta.validation.Valid;
@@ -50,5 +52,12 @@ public class TeamController {
         var team = teamService.getById(teamId);
 
         return new TeamModelAssembler().toModel(team);
+    }
+
+    @PutMapping("/{teamId}")
+    public RepresentationModel<TeamResource> updateTeam(@PathVariable UUID teamId, @RequestBody @Valid UpdateTeamRequest request) {
+        var updatedTeam = teamService.updateById(teamId, UpdateTeamDto.fromRequest(request));
+
+        return new TeamModelAssembler().toModel(updatedTeam);
     }
 }

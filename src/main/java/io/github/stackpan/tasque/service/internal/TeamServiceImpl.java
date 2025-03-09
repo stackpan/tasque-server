@@ -1,6 +1,7 @@
 package io.github.stackpan.tasque.service.internal;
 
 import io.github.stackpan.tasque.data.CreateTeamDto;
+import io.github.stackpan.tasque.data.UpdateTeamDto;
 import io.github.stackpan.tasque.entity.Team;
 import io.github.stackpan.tasque.entity.TeamMember;
 import io.github.stackpan.tasque.entity.User;
@@ -61,5 +62,15 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public Team getById(UUID teamId) {
         return teamServiceUtil.authorizedFindById(teamId);
+    }
+
+    @Override
+    @Transactional
+    public Team updateById(UUID teamId, UpdateTeamDto data) {
+        var team = teamServiceUtil.authorizedFindById(teamId);
+        team.setName(data.name());
+        team.setDescription(data.description().orElse(null));
+
+        return teamRepository.save(team);
     }
 }

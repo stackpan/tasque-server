@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -261,6 +262,167 @@ public class TeamTest {
         void byNotJoinTeamIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/teams/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
                             .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    class UpdateTeam {
+
+        private final String TARGET_ID = "a8119215-c4cc-446a-808b-ff28c2ee9f3c";
+
+        @Test
+        void shouldReturnUpdatedTeamAndChangedOnDatabase() throws Exception {
+            var oldTeamMap = jdbcTemplate.queryForMap("select * from teams where id = ?", UUID.fromString(TARGET_ID));
+
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": "Updated Team 1 description."
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/teams/%s".formatted(TARGET_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("id").value(TARGET_ID),
+                            jsonPath("name").value(JsonPath.<String>read(payload, "$.name")),
+                            jsonPath("description").value(JsonPath.<String>read(payload, "$.description")),
+                            jsonPath("profilePictureUrl").isEmpty(),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("_links.self.href").value(containsString("/teams/%s".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")))
+                    )
+                    .andDo(result -> {
+                        var updatedTeamMap = jdbcTemplate.queryForMap("select * from teams where id = ?", UUID.fromString(TARGET_ID));
+
+                        assertEquals(updatedTeamMap.get("name"), JsonPath.<String>read(payload, "$.name"));
+                        assertEquals(updatedTeamMap.get("description"), JsonPath.<String>read(payload, "$.description"));
+
+                        var oldTeamUpdatedAt = ((Timestamp) oldTeamMap.get("updated_at")).toInstant();
+                        var updatedTeamUpdatedAt = ((Timestamp) updatedTeamMap.get("updated_at")).toInstant();
+                        assertTrue(updatedTeamUpdatedAt.isAfter(oldTeamUpdatedAt));
+                    });
+        }
+
+        @Test
+        void withNullablePayloadShouldReturnUpdatedTeamAndChangedOnDatabase() throws Exception {
+            var oldTeamMap = jdbcTemplate.queryForMap("select * from teams where id = ?", UUID.fromString(TARGET_ID));
+
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": null
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/teams/%s".formatted(TARGET_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("id").value(TARGET_ID),
+                            jsonPath("name").value(JsonPath.<String>read(payload, "$.name")),
+                            jsonPath("description").isEmpty(),
+                            jsonPath("profilePictureUrl").isEmpty(),
+                            jsonPath("$.createdAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("$.updatedAt", matchesPattern(Regexps.TIMESTAMP)),
+                            jsonPath("_links.self.href").value(containsString("/teams/%s".formatted("a8119215-c4cc-446a-808b-ff28c2ee9f3c")))
+                    )
+                    .andDo(result -> {
+                        var updatedTeamMap = jdbcTemplate.queryForMap("select * from teams where id = ?", UUID.fromString(TARGET_ID));
+
+                        assertEquals(updatedTeamMap.get("name"), JsonPath.<String>read(payload, "$.name"));
+                        assertEquals(updatedTeamMap.get("description"), JsonPath.<String>read(payload, "$.description"));
+
+                        var oldTeamUpdatedAt = ((Timestamp) oldTeamMap.get("updated_at")).toInstant();
+                        var updatedTeamUpdatedAt = ((Timestamp) updatedTeamMap.get("updated_at")).toInstant();
+                        assertTrue(updatedTeamUpdatedAt.isAfter(oldTeamUpdatedAt));
+                    });
+        }
+
+        @Test
+        void withInvalidPayloadShouldBadRequest() throws Exception {
+            var payload = """
+                    {
+                        "name": 999
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/teams/%s".formatted(TARGET_ID))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$.message").value("Invalid payload."),
+                            jsonPath("$._embedded.payloadErrors.name").isArray(),
+                            jsonPath("$._embedded.payloadErrors.description").doesNotExist()
+                    );
+        }
+
+        @Test
+        void byUnknownIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": "Updated Team 1 description."
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/teams/75d46c19-d28e-4a8d-8e7c-19220b15c507")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byInvalidUuidShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": "Updated Team 1 description."
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/invaliduuid")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void byUnownedTeamIdShouldNotFound() throws Exception {
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": "Updated Team 1 description."
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/boards/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
                     )
                     .andExpect(status().isNotFound());
         }
