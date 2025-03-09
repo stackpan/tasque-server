@@ -400,7 +400,7 @@ public class TeamTest {
                     }
                     """;
 
-            mockMvc.perform(put("/api/boards/invaliduuid")
+            mockMvc.perform(put("/api/teams/invaliduuid")
                             .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
@@ -418,7 +418,7 @@ public class TeamTest {
                     }
                     """;
 
-            mockMvc.perform(put("/api/boards/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
+            mockMvc.perform(put("/api/teams/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
                             .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
