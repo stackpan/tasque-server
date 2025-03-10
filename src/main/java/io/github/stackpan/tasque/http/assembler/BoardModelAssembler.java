@@ -5,6 +5,8 @@ import io.github.stackpan.tasque.entity.Team;
 import io.github.stackpan.tasque.entity.User;
 import io.github.stackpan.tasque.http.controller.BoardController;
 import io.github.stackpan.tasque.http.resource.BoardResource;
+import io.github.stackpan.tasque.http.resource.TeamResource;
+import io.github.stackpan.tasque.http.resource.UserResource;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.RepresentationModel;
@@ -20,7 +22,7 @@ public class BoardModelAssembler implements RepresentationModelAssembler<Board, 
     public RepresentationModel<BoardResource> toModel(Board entity) {
         var boardResource = BoardResource.fromEntity(entity);
 
-        EntityModel<?> boardOwnerModel = switch (entity.getOwnerType()) {
+        RepresentationModel<?> boardOwnerModel = switch (entity.getOwnerType()) {
             case USER -> new UserModelAssembler().toModel((User) entity.getOwner());
             case TEAM -> new TeamModelAssembler().toModel((Team) entity.getOwner());
         };

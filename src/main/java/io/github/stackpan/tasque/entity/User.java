@@ -59,6 +59,9 @@ public class User implements UserDetails, BoardOwner {
     @Column(name = "deleted_at", columnDefinition = "timestamptz")
     private Instant deletedAt;
 
+    @OneToMany(mappedBy = "user")
+    private List<TeamMember> teamMembers;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
