@@ -100,6 +100,21 @@ public class TeamTest {
                             jsonPath("$._links.self.href").value(containsString("/teams"))
                     );
         }
+
+        @Test
+        void shouldNotReturnSoftDeletedTeams() throws Exception {
+            jdbcTemplate.update("update teams set deleted_at = now() where id = '1ce806d6-368a-48bc-8a24-394c78f3a568'");
+
+            mockMvc.perform(get("/api/teams").with(UserMocks.rizkyJwt()))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$._embedded.teams.length()").value(1),
+                            jsonPath("$._embedded.teams[*].id").value(
+                                    containsInAnyOrder("a8119215-c4cc-446a-808b-ff28c2ee9f3c")
+                            )
+                    );
+        }
     }
 
     @Nested
@@ -265,6 +280,18 @@ public class TeamTest {
                     )
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "1ce806d6-368a-48bc-8a24-394c78f3a568";
+
+            jdbcTemplate.update("update teams set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(get("/api/teams/%s".formatted(targetId))
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
@@ -426,6 +453,28 @@ public class TeamTest {
                     )
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "1ce806d6-368a-48bc-8a24-394c78f3a568";
+
+            jdbcTemplate.update("update teams set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            var payload = """
+                    {
+                        "name": "Updated Team 1",
+                        "description": "Updated Team 1 description."
+                    }
+                    """;
+
+            mockMvc.perform(put("/api/teams/%s".formatted(targetId))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
 
@@ -464,6 +513,18 @@ public class TeamTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/teams/2db2bcd6-0b6a-4db1-a285-7fd93058cf4d")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "1ce806d6-368a-48bc-8a24-394c78f3a568";
+
+            jdbcTemplate.update("update teams set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(delete("/api/teams/%s".formatted(targetId))
                             .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());

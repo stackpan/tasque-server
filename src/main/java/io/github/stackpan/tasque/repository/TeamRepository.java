@@ -13,10 +13,10 @@ import java.util.UUID;
 
 public interface TeamRepository extends JpaRepository<Team, UUID> {
 
-    @Query("select t from Team t join TeamMember tm on tm.team = t where tm.user = ?1")
+    @Query("select t from Team t join TeamMember tm on tm.team = t where tm.user = ?1 and t.deletedAt is null")
     Collection<Team> getByUser(User user);
 
-    @Query("select t from Team t join TeamMember tm on tm.team = t where t.id = ?1 and tm.user = ?2")
+    @Query("select t from Team t join TeamMember tm on tm.team = t where t.id = ?1 and tm.user = ?2 and t.deletedAt is null")
     Optional<Team> findByIdAndUser(UUID teamId, User user);
 
     @Modifying
