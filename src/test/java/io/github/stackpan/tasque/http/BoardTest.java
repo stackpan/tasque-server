@@ -18,6 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,6 +91,23 @@ public class BoardTest {
                             jsonPath("$._embedded.boards[*]._embedded.owner.updatedAt", everyItem(equalTo("2024-07-28T00:00:00Z"))),
                             jsonPath("$._embedded.boards[*]._embedded.owner._links.self.href", everyItem(containsString("/users/172e7077-76a4-4fa3-879d-6ec767c655e6"))),
                             jsonPath("$._links.self.href").value(containsString("/api/boards"))
+                    );
+        }
+
+        @Test
+        void shouldNotReturnSoftDeletedTeams() throws Exception {
+            jdbcTemplate.update("update boards set deleted_at = now() where id = '037b473d-cdd1-42e6-b1f1-4c6a3e1307f9'");
+
+            mockMvc.perform(get("/api/boards")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, ExtMediaType.APPLICATION_HAL_JSON_VALUE))
+                    .andExpectAll(
+                            jsonPath("$._embedded.boards.length()").value(2),
+                            jsonPath("$._embedded.boards[*].id").value(
+                                    containsInAnyOrder("0eec62bb-e1b6-40d8-aa3e-349853b96b6e", "1baeb76d-0cdc-4eb4-885f-890b8cbab09e")
+                            )
                     );
         }
     }
@@ -282,6 +300,18 @@ public class BoardTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(get("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "037b473d-cdd1-42e6-b1f1-4c6a3e1307f9";
+
+            jdbcTemplate.update("update boards set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(get("/api/boards/%s".formatted(targetId))
                             .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
@@ -486,6 +516,29 @@ public class BoardTest {
                     )
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "037b473d-cdd1-42e6-b1f1-4c6a3e1307f9";
+
+            var payload = """
+                    {
+                        "name": "Updated Board One",
+                        "description": "A long description of Updated Board One.",
+                        "colorHex": "#ffffff"
+                    }
+                    """;
+
+            jdbcTemplate.update("update boards set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(put("/api/boards/%s".formatted(targetId))
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
@@ -500,8 +553,8 @@ public class BoardTest {
                     )
                     .andExpect(status().isNoContent());
 
-            var count = jdbcTemplate.queryForObject("select count(*) from boards where id = ?", Integer.class, UUID.fromString(TARGET_ID));
-            assertEquals(count, 0);
+            var boardMap = jdbcTemplate.queryForMap("select deleted_at from boards where id = ?", UUID.fromString(TARGET_ID));
+            assertNotNull(boardMap.get("deleted_at"));
         }
 
         @Test
@@ -523,6 +576,18 @@ public class BoardTest {
         @Test
         void byUnownedBoardIdShouldNotFound() throws Exception {
             mockMvc.perform(delete("/api/boards/7e885910-1df0-4744-8083-73e1d9769062")
+                            .with(UserMocks.rizkyJwt())
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "037b473d-cdd1-42e6-b1f1-4c6a3e1307f9";
+
+            jdbcTemplate.update("update boards set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(delete("/api/boards/%s".formatted(targetId))
                             .with(UserMocks.rizkyJwt())
                     )
                     .andExpect(status().isNotFound());
@@ -728,6 +793,28 @@ public class BoardTest {
                     """;
 
             mockMvc.perform(post("/api/boards/7e885910-1df0-4744-8083-73e1d9769062/move-card")
+                            .with(UserMocks.rizkyJwt())
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
+                            .content(payload)
+                    )
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void bySoftDeletedShouldNotFound() throws Exception {
+            var targetId = "037b473d-cdd1-42e6-b1f1-4c6a3e1307f9";
+
+            var payload = """
+                    {
+                        "targetCardId": "d8355640-cf9c-45ec-a1ee-398157f5a544",
+                        "destinationColumnId": "89143482-fdbc-47fa-9a60-fca63335521f"
+                    }
+                    """;
+
+            jdbcTemplate.update("update boards set deleted_at = now() where id = '%s'".formatted(targetId));
+
+            mockMvc.perform(post("/api/boards/%s/move".formatted(targetId))
                             .with(UserMocks.rizkyJwt())
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(ExtMediaType.APPLICATION_HAL_JSON_VALUE)
