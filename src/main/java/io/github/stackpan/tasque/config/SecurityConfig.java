@@ -1,5 +1,6 @@
 package io.github.stackpan.tasque.config;
 
+import io.github.stackpan.tasque.config.properties.StorageConfigProperties;
 import io.github.stackpan.tasque.service.internal.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class SecurityConfig {
 
     private final UserServiceImpl userService;
 
+    private final StorageConfigProperties storageConfigProperties;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -46,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(storageConfigProperties.localHandler() + "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .build();
