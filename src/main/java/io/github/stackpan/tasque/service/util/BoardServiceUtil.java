@@ -23,7 +23,7 @@ public class BoardServiceUtil {
         var user = new User();
         user.setId(authToken.getCurrentSubject());
 
-        return boardRepository.findByIdAndOwner(boardId, user)
+        return boardRepository.findByIdAndOwnerAndDeletedAtIsNull(boardId, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

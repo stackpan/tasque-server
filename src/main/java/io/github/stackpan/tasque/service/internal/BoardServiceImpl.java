@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +41,7 @@ public class BoardServiceImpl implements BoardService {
         var user = new User();
         user.setId(authToken.getCurrentSubject());
 
-        return boardRepository.findAllByOwner(user);
+        return boardRepository.findAllByOwnerAndDeletedAtIsNull(user);
     }
 
     @Override
@@ -79,7 +80,9 @@ public class BoardServiceImpl implements BoardService {
     public void deleteById(UUID boardId) {
         var board = boardServiceUtil.authorizedFindById(boardId);
 
-        boardRepository.delete(board);
+        board.setDeletedAt(Instant.now());
+
+        boardRepository.save(board);
     }
 
     @Override
