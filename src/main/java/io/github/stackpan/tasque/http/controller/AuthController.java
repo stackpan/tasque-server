@@ -3,6 +3,7 @@ package io.github.stackpan.tasque.http.controller;
 import io.github.stackpan.tasque.data.AuthLoginDto;
 import io.github.stackpan.tasque.http.assembler.AuthModelAssembler;
 import io.github.stackpan.tasque.http.request.LoginRequest;
+import io.github.stackpan.tasque.http.request.UploadMeRequest;
 import io.github.stackpan.tasque.http.resource.AuthResource;
 import io.github.stackpan.tasque.http.resource.UserResource;
 import io.github.stackpan.tasque.service.AuthService;
@@ -42,8 +43,12 @@ public class AuthController {
     }
 
     @PatchMapping("/me/upload")
-    public Object upload() {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    public EntityModel<UserResource> upload(@Valid UploadMeRequest request) {
+        var user = userService.getMe();
+
+        var updatedUser = userService.updateProfilePicture(user, request.profilePicture());
+
+        return new AuthModelAssembler().toModel(updatedUser);
     }
 
     @PostMapping("/me/change-password")
